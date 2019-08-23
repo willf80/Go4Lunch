@@ -3,4 +3,8 @@
     <string name="title_maps">Maps</string>
     <string name="title_list_view">List View</string>
     <string name="title_workmates">Workmates</string>
+    <string name="search">Search</string>
+
+    <string name="search_restaurants">Search restaurants</string>
+    <string name="search_workmates">Search workmates</string>
 </resources>
