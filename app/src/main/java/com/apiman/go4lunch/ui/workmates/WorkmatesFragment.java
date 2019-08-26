@@ -1,4 +1,4 @@
-package com.apiman.go4lunch.ui.dashboard;
+package com.apiman.go4lunch.ui.workmates;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -14,17 +14,17 @@ import androidx.lifecycle.ViewModelProviders;
 
 import com.apiman.go4lunch.R;
 
-public class DashboardFragment extends Fragment {
+public class WorkmatesFragment extends Fragment {
 
-    private DashboardViewModel dashboardViewModel;
+    private WorkmatesViewModel mWorkmatesViewModel;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        dashboardViewModel =
-                ViewModelProviders.of(this).get(DashboardViewModel.class);
-        View root = inflater.inflate(R.layout.fragment_dashboard, container, false);
-        final TextView textView = root.findViewById(R.id.text_dashboard);
-        dashboardViewModel.getText().observe(this, new Observer<String>() {
+        mWorkmatesViewModel =
+                ViewModelProviders.of(this).get(WorkmatesViewModel.class);
+        View root = inflater.inflate(R.layout.fragment_workmates, container, false);
+        final TextView textView = root.findViewById(R.id.text_notifications);
+        mWorkmatesViewModel.getText().observe(this, new Observer<String>() {
             @Override
             public void onChanged(@Nullable String s) {
                 textView.setText(s);
