@@ -37,6 +37,9 @@ dependencies {
     implementation 'com.google.android.gms:play-services-maps:17.0.0'
     annotationProcessor 'com.jakewharton:butterknife-compiler:10.1.0'
 
+    // CircleImage
+    implementation 'de.hdodenhof:circleimageview:3.0.0'
+
     // Tests
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test:runner:1.2.0'
