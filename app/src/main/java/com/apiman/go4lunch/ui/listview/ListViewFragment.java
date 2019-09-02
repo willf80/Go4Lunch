@@ -1,5 +1,6 @@
 package com.apiman.go4lunch.ui.listview;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,13 +16,14 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.apiman.go4lunch.R;
+import com.apiman.go4lunch.RestaurantDetailsActivity;
 import com.apiman.go4lunch.adapters.RestaurantListAdapter;
 import com.apiman.go4lunch.models.Restaurant;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ListViewFragment extends Fragment {
+public class ListViewFragment extends Fragment implements RestaurantListAdapter.OnDispatchListener {
 
     private ListViewModel mListViewModel;
     private RestaurantListAdapter mRestaurantListAdapter;
@@ -38,20 +40,19 @@ public class ListViewFragment extends Fragment {
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
 
-        mRestaurantListAdapter = new RestaurantListAdapter(mRestaurantList);
+        mRestaurantListAdapter = new RestaurantListAdapter(mRestaurantList, this);
         mRecyclerView.setAdapter(mRestaurantListAdapter);
-//        final TextView textView = root.findViewById(R.id.text_home);
-//        mListViewModel.getText().observe(this, new Observer<String>() {
-//            @Override
-//            public void onChanged(@Nullable String s) {
-//                textView.setText(s);
-//            }
-//        });
 
         mListViewModel.getRestaurantList()
                 .observe(this, restaurants -> mRestaurantListAdapter.setRestaurants(restaurants));
 
 
         return root;
+    }
+
+    @Override
+    public void onItemClicked(Restaurant restaurant) {
+        Intent intent = new Intent(getContext(), RestaurantDetailsActivity.class);
+        startActivity(intent);
     }
 }

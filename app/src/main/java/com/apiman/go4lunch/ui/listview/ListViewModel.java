@@ -11,13 +11,9 @@ import java.util.List;
 
 public class ListViewModel extends ViewModel {
 
-    private MutableLiveData<String> mText;
     private MutableLiveData<List<Restaurant>> mRestaurantList;
 
     public ListViewModel() {
-        mText = new MutableLiveData<>();
-        mText.setValue("This is home fragment");
-
         // Mock data
         mRestaurantList = new MutableLiveData<>();
         List<Restaurant> restaurants = new ArrayList<>();
@@ -25,10 +21,6 @@ public class ListViewModel extends ViewModel {
             restaurants.add(new Restaurant());
         }
         mRestaurantList.setValue(restaurants);
-    }
-
-    public LiveData<String> getText() {
-        return mText;
     }
 
     public LiveData<List<Restaurant>> getRestaurantList(){
