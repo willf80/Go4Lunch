@@ -15,9 +15,15 @@ import java.util.List;
 public class RestaurantListAdapter extends RecyclerView.Adapter<RestaurantListAdapter.RestaurantViewHolder> {
 
     private List<Restaurant> mRestaurants;
+    private OnDispatchListener mOnDispatchListener;
 
-    public RestaurantListAdapter(List<Restaurant> restaurants) {
+    public interface OnDispatchListener{
+        void onItemClicked(Restaurant restaurant);
+    }
+
+    public RestaurantListAdapter(List<Restaurant> restaurants, OnDispatchListener onDispatchListener) {
         mRestaurants = restaurants;
+        mOnDispatchListener = onDispatchListener;
     }
 
     public void setRestaurants(List<Restaurant> restaurants) {
@@ -37,7 +43,9 @@ public class RestaurantListAdapter extends RecyclerView.Adapter<RestaurantListAd
 
     @Override
     public void onBindViewHolder(@NonNull RestaurantViewHolder holder, int position) {
+        final Restaurant restaurant = mRestaurants.get(position);
 
+        holder.itemView.setOnClickListener(v -> mOnDispatchListener.onItemClicked(restaurant));
     }
 
     @Override
