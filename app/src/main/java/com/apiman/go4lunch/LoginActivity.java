@@ -67,8 +67,6 @@ public class LoginActivity extends AppCompatActivity {
     private void firebaseAuthWithGoogle(@NonNull GoogleSignInAccount signInAccount) {
         Log.d(TAG, "firebaseAuthWithGoogle:" + signInAccount.getId());
 
-        // TODO : showProgressDialog()
-
         AuthCredential credential = GoogleAuthProvider.getCredential(signInAccount.getIdToken(), null);
         mFirebaseAuth.signInWithCredential(credential)
                 .addOnCompleteListener(task -> {
