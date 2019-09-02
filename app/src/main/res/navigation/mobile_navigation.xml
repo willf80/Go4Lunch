@@ -20,6 +20,6 @@
     <fragment
         android:id="@+id/navigation_workmates"
         android:name="com.apiman.go4lunch.ui.workmates.WorkmatesFragment"
-        android:label="@string/title_workmates"
+        android:label="@string/title_workmates_available"
         tools:layout="@layout/fragment_workmates" />
 </navigation>
