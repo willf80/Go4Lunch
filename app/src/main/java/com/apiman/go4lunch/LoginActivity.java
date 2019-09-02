@@ -89,6 +89,7 @@ public class LoginActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
 
+        signOut();
         FirebaseUser currentUser = mFirebaseAuth.getCurrentUser();
         updateUI((currentUser));
     }
@@ -99,18 +100,28 @@ public class LoginActivity extends AppCompatActivity {
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
 
+    private void signOut() {
+        mFirebaseAuth.signOut();
+
+        mGoogleSignInClient.signOut()
+                .addOnCompleteListener(task -> updateUI(null));
+    }
+
     private void updateUI(@Nullable FirebaseUser user) {
-        if(user != null) {
-            Toast.makeText(this, "Connected", Toast.LENGTH_LONG).show();
-            startConnectedActivity();
-        }else {
+        if(user == null) {
             Toast.makeText(this, "Disconnected", Toast.LENGTH_LONG).show();
+            return;
         }
+
+        Toast.makeText(this, "Connected", Toast.LENGTH_LONG).show();
+        startConnectedActivity();
     }
 
     private void startConnectedActivity() {
         Intent intent = new Intent(this, MainActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
+
+        finish();
     }
 }

@@ -5,29 +5,36 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
-import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.navigation.NavigationView;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.cardview.widget.CardView;
-import androidx.navigation.NavAction;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.navigation.NavController;
 import androidx.navigation.NavDestination;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.navigation.NavigationView;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     @BindView(R.id.toolbar)
     Toolbar mToolbar;
+
+    @BindView(R.id.activity_main_drawer_layout)
+    DrawerLayout mDrawerLayout;
+
+    @BindView(R.id.activity_main_navigation_view)
+    NavigationView mNavigationView;
 
     @BindView(R.id.searchView)
     SearchView mSearchView;
@@ -42,6 +49,20 @@ public class MainActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         setSupportActionBar(mToolbar);
 
+        configureDrawerLayout();
+
+        configureNavigationView();
+
+        configureBottomNavigationView();
+
+        mSearchView.setOnQueryTextFocusChangeListener((v, hasFocus) -> {
+            if(!hasFocus) {
+                hideSearchView();
+            }
+        });
+    }
+
+    private void configureBottomNavigationView() {
         BottomNavigationView navView = findViewById(R.id.nav_view);
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
@@ -53,13 +74,29 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupWithNavController(navView, navController);
 
         navController.addOnDestinationChangedListener(mOnDestinationChangedListener);
-
-        mSearchView.setOnQueryTextFocusChangeListener((v, hasFocus) -> {
-            if(!hasFocus) {
-                hideSearchView();
-            }
-        });
     }
+
+
+    // Configure Drawer Layout
+    private void configureDrawerLayout(){
+        ActionBarDrawerToggle toggle =
+                new ActionBarDrawerToggle(this, mDrawerLayout,
+                mToolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+                mDrawerLayout.addDrawerListener(toggle);
+
+        toggle.syncState();
+    }
+
+    // Configure NavigationView
+    private void configureNavigationView(){
+        buildNavigationMenu(mNavigationView.getMenu());
+        mNavigationView.setNavigationItemSelectedListener(this);
+    }
+
+    private void buildNavigationMenu(Menu menu) {
+
+    }
+
 
     private NavController.OnDestinationChangedListener
             mOnDestinationChangedListener= new NavController.OnDestinationChangedListener() {
@@ -103,4 +140,11 @@ public class MainActivity extends AppCompatActivity {
         mToolbar.setVisibility(View.VISIBLE);
         searchViewContainer.setVisibility(View.GONE);
     }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
+
+        return false;
+    }
+
 }
