@@ -1,5 +1,6 @@
 package com.apiman.go4lunch;
 
+import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -89,14 +90,21 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     // Configure NavigationView
     private void configureNavigationView(){
-        buildNavigationMenu(mNavigationView.getMenu());
+        int[][] states = new int[][]{
+                new int[]{android.R.attr.state_pressed},
+                new int[]{}
+        };
+
+        int[] colors = new int[]{
+                getResources().getColor(R.color.colorGrey300),
+                getResources().getColor(android.R.color.white)
+        };
+
+        ColorStateList colorStateList = new ColorStateList(states, colors);
         mNavigationView.setNavigationItemSelectedListener(this);
+        mNavigationView.setItemTextColor(colorStateList);
+        mNavigationView.setItemIconTintList(colorStateList);
     }
-
-    private void buildNavigationMenu(Menu menu) {
-
-    }
-
 
     private NavController.OnDestinationChangedListener
             mOnDestinationChangedListener= new NavController.OnDestinationChangedListener() {

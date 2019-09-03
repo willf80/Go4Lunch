@@ -6,6 +6,10 @@
     <string name="title_workmates_available">Available workmates</string>
     <string name="search">Search</string>
 
+    <string name="menu_action_your_lunch">YOUR LUNCH</string>
+    <string name="menu_action_settings">SETTINGS</string>
+    <string name="menu_action_logout">LOGOUT</string>
+
     <string name="search_restaurants">Search restaurants</string>
     <string name="search_workmates">Search workmates</string>
     <string name="title_activity_maps">Map</string>
