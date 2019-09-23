@@ -1,44 +1,78 @@
 package com.apiman.go4lunch.ui.maps;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProviders;
+import androidx.annotation.Nullable;
 
 import com.apiman.go4lunch.R;
+import com.apiman.go4lunch.models.Restaurant;
+import com.apiman.go4lunch.ui.BaseFragment;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.api.model.RectangularBounds;
+import com.google.android.libraries.places.widget.Autocomplete;
+import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
 
-public class MapsFragment extends Fragment implements OnMapReadyCallback {
+import java.util.Arrays;
+import java.util.List;
 
-    private MapsViewModel mMapsViewModel;
+public class MapsFragment extends BaseFragment implements OnMapReadyCallback {
+    private static final int AUTOCOMPLETE_REQUEST_CODE = 1;
+    private static final float DEFAULT_ZOOM = 15.0f;
+
     private GoogleMap mMap;
+    private boolean mLocationPermissionGranted = false;
+    private LatLng mDefaultLocation = new LatLng(40.6971494,-74.2598642);
+
+    // Use fields to define the data types to return.
+    private List<Place.Field> placeFields = Arrays.asList(
+            Place.Field.NAME,
+            Place.Field.LAT_LNG,
+            Place.Field.ID,
+            Place.Field.TYPES
+        );
+
+//    private PlacesClient mPlacesClient;
+//    private Realm mRealm;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        setHasOptionsMenu(true);
+//        mRealm = Realm.getDefaultInstance();
+    }
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        mMapsViewModel = ViewModelProviders.of(this).get(MapsViewModel.class);
+        super.onCreateView(inflater, container, savedInstanceState);
+
         View root = inflater.inflate(R.layout.fragment_maps, container, false);
-
-//        final TextView textView = root.findViewById(R.id.text_dashboard);
-//        mMapsViewModel.getText().observe(this, new Observer<String>() {
-//            @Override
-//            public void onChanged(@Nullable String s) {
-//                textView.setText(s);
-//            }
-//        });
-
-        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
-                .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
+        SupportMapFragment mapFragment =
+                (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
+        if(mapFragment != null) {
+            mapFragment.getMapAsync(this);
+        }
 
 
+        Places.initialize(getContext(), getString(R.string.google_maps_key));
+//        mPlacesClient = Places.createClient(getContext());
 
         return root;
     }
@@ -47,9 +81,139 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        // Maps Settings
+        UiSettings uiSettings = mMap.getUiSettings();
+        uiSettings.setAllGesturesEnabled(true);
+        uiSettings.setZoomControlsEnabled(true);
+
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mDefaultLocation, DEFAULT_ZOOM));
+
+        mViewModel.getLocationPermissionState()
+            .observe(this, state -> {
+                mLocationPermissionGranted = state;
+                updateLocationUI();
+            });
+
+
+        mViewModel.getLastKnowLocation()
+            .observe(this, latLng -> {
+                if(latLng == null) return;
+
+                zoomToLocation(latLng);
+                getRestaurants(getContext(), latLng);
+            });
+    }
+
+    private void getRestaurants(Context context, LatLng latLng) {
+        mViewModel.getRestaurantList(context, latLng)
+                .observe(this, this::drawMarker);
+    }
+
+    private void zoomToLocation(LatLng latLng) {
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, DEFAULT_ZOOM));
+    }
+
+    private void drawMarker(List<Restaurant> restaurants) {
+        // Clean map
+        mMap.clear();
+
+        // Draw
+        for (Restaurant restaurant : restaurants) {
+            MarkerOptions markerOptions = new MarkerOptions()
+                    .title(restaurant.getName())
+                    .position(new LatLng(restaurant.getLatitude(), restaurant.getLongitude()));
+            mMap.addMarker(markerOptions);
+        }
+    }
+
+
+//    private void findCurrentPlaceAndHandle() {
+//        if(!canPlaceSearch) return;
+//
+//        // Use the builder to create a FindCurrentPlaceRequest.
+//        FindCurrentPlaceRequest request =
+//                FindCurrentPlaceRequest.newInstance(placeFields);
+//
+//        Task<FindCurrentPlaceResponse> placeResponse = mPlacesClient.findCurrentPlace(request);
+//        placeResponse.addOnCompleteListener(task -> {
+//            if (task.isSuccessful()){
+//                FindCurrentPlaceResponse response = task.getResult();
+//                mMap.clear();
+//                for (PlaceLikelihood placeLikelihood : response.getPlaceLikelihoods()) {
+//                    List<Place.Type> placesType = placeLikelihood.getPlace().getTypes();
+//                    if(placesType == null) continue;
+//
+//                    if(placesType.contains(Place.Type.RESTAURANT)){
+//                        Log.i(TAG, String.format("Place '%s' has likelihood: %f",
+//                                placeLikelihood.getPlace().getName(),
+//                                placeLikelihood.getLikelihood()));
+//                        Log.w(TAG, placeLikelihood.getPlace().getTypes().toString());
+//
+//                        MarkerOptions markerOptions = new MarkerOptions()
+//                                .title(placeLikelihood.getPlace().getName())
+//                                .position(placeLikelihood.getPlace().getLatLng());
+//                        mMap.addMarker(markerOptions);
+//                    }else {
+//                        Log.e(TAG, String.format("Place '%s' has likelihood: %f",
+//                                placeLikelihood.getPlace().getName(),
+//                                placeLikelihood.getLikelihood()));
+//                        Log.e(TAG, placeLikelihood.getPlace().getTypes().toString());
+//                    }
+////                    Log.i(TAG, String.format("Place '%s' has likelihood: %f",
+////                            placeLikelihood.getPlace().getName(),
+////                            placeLikelihood.getLikelihood()));
+////                    Log.w(TAG, placeLikelihood.getPlace().getTypes().toString());
+//                }
+//            } else {
+//                Exception exception = task.getException();
+//                if (exception instanceof ApiException) {
+//                    ApiException apiException = (ApiException) exception;
+//                    Log.e(TAG, "Place not found: " + apiException.getStatusCode());
+//                }
+//            }
+//        });
+//    }
+
+    private void updateLocationUI() {
+        if (mMap == null) return;
+
+        if (mLocationPermissionGranted) {
+            mMap.setMyLocationEnabled(true);
+            mMap.getUiSettings().setMyLocationButtonEnabled(true);
+        } else {
+            mMap.setMyLocationEnabled(false);
+            mMap.getUiSettings().setMyLocationButtonEnabled(false);
+            grantLocationPermission();
+        }
+    }
+
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.main_menu, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if(item.getItemId() == R.id.app_bar_search){
+//            showSearchView();
+            autoCompleteSearch();
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void autoCompleteSearch() {
+        LatLngBounds latLngBounds = mMap.getProjection().getVisibleRegion().latLngBounds;
+        RectangularBounds bounds = RectangularBounds.newInstance(
+                latLngBounds.southwest,
+                latLngBounds.northeast);
+
+        // Start the autocomplete intent.
+        Intent intent = new Autocomplete.IntentBuilder(
+                AutocompleteActivityMode.OVERLAY, placeFields)
+                .setCountry("fr")
+                .setLocationBias(bounds)
+                .build(getContext());
+        startActivityForResult(intent, AUTOCOMPLETE_REQUEST_CODE);
     }
 }
