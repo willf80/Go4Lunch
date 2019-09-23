@@ -12,6 +12,7 @@ import com.apiman.go4lunch.models.ApiDetailsResult;
 import com.apiman.go4lunch.models.ApiResponse;
 import com.apiman.go4lunch.models.Restaurant;
 import com.apiman.go4lunch.services.RestaurantStreams;
+import com.apiman.go4lunch.services.Utils;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.List;
@@ -49,15 +50,9 @@ public class BaseViewModel extends ViewModel {
     private void restaurantChangeListener() {
         mRealm.addChangeListener(realm -> {
             if(mRestaurantList == null) return;
-
-            List<Restaurant> restaurants =
-                    realm.where(Restaurant.class)
-                            .findAll();
-
-            mRestaurantList.setValue(restaurants);
+            mRestaurantList.setValue(realm.where(Restaurant.class).findAll());
         });
     }
-
 
     //---- Start Restaurants
     public LiveData<List<Restaurant>> getRestaurantList(Context context, LatLng latLng) {
@@ -83,7 +78,7 @@ public class BaseViewModel extends ViewModel {
                         saveRestaurants(restaurants);
 
                         for (Restaurant restaurant : restaurants) {
-                            getRestaurantsDetails(context, restaurant);
+                            getRestaurantsDetails(context, restaurant, latLng);
                         }
                     }
 
@@ -94,7 +89,7 @@ public class BaseViewModel extends ViewModel {
                 });
     }
 
-    private void getRestaurantsDetails(final Context context, Restaurant restaurant) {
+    private void getRestaurantsDetails(final Context context, Restaurant restaurant, final LatLng currentLocation) {
         if(restaurant == null) return;
 
         RestaurantStreams.getRestaurantDetails(context, restaurant.getPlaceId())
@@ -109,7 +104,7 @@ public class BaseViewModel extends ViewModel {
                         ApiDetailsResult detailsResult = detailsResponse.getApiResult();
                         if(detailsResult == null) return;
 
-                        updatedRestaurantInfo(restaurant, detailsResult);
+                        updatedRestaurantInfo(restaurant, detailsResult, currentLocation);
                     }
 
                     @Override
@@ -119,8 +114,15 @@ public class BaseViewModel extends ViewModel {
                 });
     }
 
-    private void updatedRestaurantInfo(Restaurant restaurant, ApiDetailsResult detailsResult) {
+    private void updatedRestaurantInfo(Restaurant restaurant, ApiDetailsResult detailsResult, LatLng currentLocation) {
         restaurant.setPlaceId(detailsResult.getPlaceId());
+
+        int distance = Utils.distanceInMeters(
+                currentLocation.latitude, currentLocation.longitude,
+                restaurant.getLatitude(), restaurant.getLongitude()
+        );
+
+        restaurant.setDistance(distance);
 
         mRealm.beginTransaction();
         mRealm.copyToRealmOrUpdate(restaurant);
