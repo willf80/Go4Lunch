@@ -34,12 +34,17 @@ class ApiClientConfig {
                 .build();
     }
 
-    static Map<String, String> getDefaultParameters(Context context) {
-        Map<String, String> map = new HashMap<>();
-        map.put("key", context.getString(R.string.p_api_key));
+    static Map<String, String> getNearbyDefaultParameters(Context context) {
+        Map<String, String> map = getDefaultParameters(context);
         map.put("radius", context.getString(R.string.p_radius));
         map.put("type", context.getString(R.string.p_type_restaurant));
 
+        return map;
+    }
+
+    static Map<String, String> getDefaultParameters(Context context) {
+        Map<String, String> map = new HashMap<>();
+        map.put("key", context.getString(R.string.p_api_key));
         return map;
     }
 }

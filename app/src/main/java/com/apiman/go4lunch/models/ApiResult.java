@@ -2,9 +2,7 @@ package com.apiman.go4lunch.models;
 
 import com.google.gson.annotations.SerializedName;
 
-import io.realm.RealmObject;
-
-public class ApiResults extends RealmObject {
+public class ApiResult {
     private String id;
     private String name;
     private String reference;
@@ -16,6 +14,8 @@ public class ApiResults extends RealmObject {
 
     @SerializedName("user_ratings_total")
     private double userRatingsTotal;
+
+    private Geometry geometry;
 
     public String getId() {
         return id;
@@ -63,5 +63,31 @@ public class ApiResults extends RealmObject {
 
     public void setUserRatingsTotal(double userRatingsTotal) {
         this.userRatingsTotal = userRatingsTotal;
+    }
+
+    class Geometry {
+        Location location;
+    }
+
+    class Location {
+        double lat;
+        double lng;
+    }
+
+    Restaurant toRestaurant() {
+        Restaurant restaurant = new Restaurant();
+        restaurant.setId(id);
+        restaurant.setName(name);
+        restaurant.setPlaceId(placeId);
+        restaurant.setRating(rating);
+        restaurant.setReference(reference);
+        restaurant.setUserRatingsTotal(userRatingsTotal);
+
+        if(geometry != null && geometry.location != null) {
+            restaurant.setLatitude(geometry.location.lat);
+            restaurant.setLongitude(geometry.location.lng);
+        }
+
+        return restaurant;
     }
 }
