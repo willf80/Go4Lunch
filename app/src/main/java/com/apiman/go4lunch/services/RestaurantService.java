@@ -5,6 +5,7 @@ import com.apiman.go4lunch.models.ApiResponse;
 
 import java.util.Map;
 
+import io.reactivex.Observable;
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.QueryMap;
@@ -15,6 +16,6 @@ public interface RestaurantService {
     Call<ApiResponse> getNearbyRestaurants(@QueryMap Map<String, String> parameters);
 
     @GET("maps/api/place/details/json")
-    Call<ApiDetailsResponse> getRestaurantDetails(@QueryMap Map<String, String> parameters);
+    Observable<ApiDetailsResponse> getRestaurantDetailsObservable(@QueryMap Map<String, String> parameters);
 
 }

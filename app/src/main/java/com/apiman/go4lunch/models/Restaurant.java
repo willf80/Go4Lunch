@@ -9,11 +9,15 @@ public class Restaurant extends RealmObject {
     private String name;
     private String reference;
     private String placeId;
+    private String address;
+    private String website;
+    private String phoneNumber;
     private double latitude;
     private double longitude;
     private double rating;
     private double userRatingsTotal;
     private boolean isChosen;
+    private int distance;
 
     public String getId() {
         return id;
@@ -85,5 +89,37 @@ public class Restaurant extends RealmObject {
 
     public void setLongitude(double longitude) {
         this.longitude = longitude;
+    }
+
+    public int getDistance() {
+        return distance;
+    }
+
+    public void setDistance(int distance) {
+        this.distance = distance;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getWebsite() {
+        return website;
+    }
+
+    public void setWebsite(String website) {
+        this.website = website;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
     }
 }

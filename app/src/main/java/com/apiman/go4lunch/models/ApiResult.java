@@ -6,14 +6,15 @@ public class ApiResult {
     private String id;
     private String name;
     private String reference;
+    private String vicinity;
 
     @SerializedName("place_id")
     private String placeId;
 
-    private double rating;
-
     @SerializedName("user_ratings_total")
     private double userRatingsTotal;
+
+    private double rating;
 
     private Geometry geometry;
 
@@ -82,6 +83,11 @@ public class ApiResult {
         restaurant.setRating(rating);
         restaurant.setReference(reference);
         restaurant.setUserRatingsTotal(userRatingsTotal);
+
+        if(vicinity != null) {
+            String  address = vicinity.split(",")[0];
+            restaurant.setAddress(address);
+        }
 
         if(geometry != null && geometry.location != null) {
             restaurant.setLatitude(geometry.location.lat);

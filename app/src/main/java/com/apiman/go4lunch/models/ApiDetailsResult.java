@@ -8,6 +8,7 @@ public class ApiDetailsResult {
 
     @SerializedName("international_phone_number")
     private String phoneNumber;
+    private String website;
 
     public String getPlaceId() {
         return placeId;
@@ -23,5 +24,13 @@ public class ApiDetailsResult {
 
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
+    }
+
+    public String getWebsite() {
+        return website;
+    }
+
+    public void setWebsite(String website) {
+        this.website = website;
     }
 }

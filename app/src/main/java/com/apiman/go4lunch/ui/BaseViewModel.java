@@ -7,7 +7,6 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-import com.apiman.go4lunch.models.ApiDetailsResponse;
 import com.apiman.go4lunch.models.ApiDetailsResult;
 import com.apiman.go4lunch.models.ApiResponse;
 import com.apiman.go4lunch.models.Restaurant;
@@ -17,6 +16,10 @@ import com.google.android.gms.maps.model.LatLng;
 
 import java.util.List;
 
+import io.reactivex.Completable;
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 import io.realm.Realm;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -43,15 +46,6 @@ public class BaseViewModel extends ViewModel {
 
         mLastKnowLocation = new MutableLiveData<>();
         mLastKnowLocation.setValue(null);
-
-        restaurantChangeListener();
-    }
-
-    private void restaurantChangeListener() {
-        mRealm.addChangeListener(realm -> {
-            if(mRestaurantList == null) return;
-            mRestaurantList.setValue(realm.where(Restaurant.class).findAll());
-        });
     }
 
     //---- Start Restaurants
@@ -77,9 +71,7 @@ public class BaseViewModel extends ViewModel {
                         List<Restaurant> restaurants = apiResponse.getRestaurants();
                         saveRestaurants(restaurants);
 
-                        for (Restaurant restaurant : restaurants) {
-                            getRestaurantsDetails(context, restaurant, latLng);
-                        }
+                        getRestaurantsDetails(context, restaurants, latLng);
                     }
 
                     @Override
@@ -89,44 +81,57 @@ public class BaseViewModel extends ViewModel {
                 });
     }
 
-    private void getRestaurantsDetails(final Context context, Restaurant restaurant, final LatLng currentLocation) {
-        if(restaurant == null) return;
+    private void getRestaurantsDetails(final Context context, List<Restaurant> restaurants, final LatLng currentLocation) {
+        // Create iterable observable
+        Observable<Restaurant> source = Observable.fromIterable(restaurants);
 
-        RestaurantStreams.getRestaurantDetails(context, restaurant.getPlaceId())
-                .enqueue(new Callback<ApiDetailsResponse>() {
-                    @Override
-                    public void onResponse(@NonNull Call<ApiDetailsResponse> call, @NonNull Response<ApiDetailsResponse> response) {
-                        if(!response.isSuccessful()) return;
+        // Get restaurants info
+        Completable completable = source.flatMapCompletable(restaurant ->
+                Completable.fromObservable(RestaurantStreams
+                .getRestaurantDetailsObservable(context, restaurant.getPlaceId())
+                .map(detailsResponse -> {
+                    ApiDetailsResult detailsResult = detailsResponse.getApiResult();
+                    if(detailsResult == null)
+                        return Observable.error(new Exception("Details info not found"));
 
-                        ApiDetailsResponse detailsResponse = response.body();
-                        if(detailsResponse == null) return;
+                    return updatedRestaurantInfo(restaurant, detailsResult, currentLocation);
+                })
+        ));
 
-                        ApiDetailsResult detailsResult = detailsResponse.getApiResult();
-                        if(detailsResult == null) return;
+        // if all completed, update restaurant list
+        completable
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnComplete(this::updateRestaurantsInfo)
+                .blockingAwait();
 
-                        updatedRestaurantInfo(restaurant, detailsResult, currentLocation);
-                    }
-
-                    @Override
-                    public void onFailure(@NonNull Call<ApiDetailsResponse> call, @NonNull Throwable t) {
-
-                    }
-                });
     }
 
-    private void updatedRestaurantInfo(Restaurant restaurant, ApiDetailsResult detailsResult, LatLng currentLocation) {
-        restaurant.setPlaceId(detailsResult.getPlaceId());
+    private void updateRestaurantsInfo() {
+        mRestaurantList.setValue(
+                mRealm.where(Restaurant.class)
+                        .sort("distance")
+                        .findAll());
+    }
 
+    private Restaurant updatedRestaurantInfo(Restaurant restaurant, ApiDetailsResult detailsResult, LatLng currentLocation) {
+        // Calculate distance
         int distance = Utils.distanceInMeters(
                 currentLocation.latitude, currentLocation.longitude,
                 restaurant.getLatitude(), restaurant.getLongitude()
         );
 
+        // Set restaurant info
+        restaurant.setWebsite(detailsResult.getWebsite());
+        restaurant.setPhoneNumber(detailsResult.getPhoneNumber());
         restaurant.setDistance(distance);
 
+        // Update restaurant info
         mRealm.beginTransaction();
-        mRealm.copyToRealmOrUpdate(restaurant);
+        Restaurant restaurantUpdated = mRealm.copyToRealmOrUpdate(restaurant);
         mRealm.commitTransaction();
+
+        return restaurantUpdated;
     }
     //---- END
 

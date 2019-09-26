@@ -9,6 +9,7 @@ import com.google.android.gms.maps.model.LatLng;
 import java.util.Locale;
 import java.util.Map;
 
+import io.reactivex.Observable;
 import retrofit2.Call;
 
 public class RestaurantStreams {
@@ -24,7 +25,8 @@ public class RestaurantStreams {
                 .getNearbyRestaurants(parameters);
     }
 
-    public static Call<ApiDetailsResponse> getRestaurantDetails(Context context,String placeId) {
+
+    public static Observable<ApiDetailsResponse> getRestaurantDetailsObservable(Context context, String placeId) {
         Map<String, String> parameters = ApiClientConfig.getDefaultParameters(context);
         parameters.put("place_id", placeId);
         parameters.put("fields", "opening_hours,international_phone_number,place_id");
@@ -32,7 +34,7 @@ public class RestaurantStreams {
         return ApiClientConfig
                 .getHttpClient(context)
                 .create(RestaurantService.class)
-                .getRestaurantDetails(parameters);
+                .getRestaurantDetailsObservable(parameters);
     }
 
 }

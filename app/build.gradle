@@ -10,7 +10,8 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        vectorDrawables.useSupportLibrary = true
+        vectorDrawables.useSupportLibrary true
+        multiDexEnabled true
     }
     buildTypes {
         release {
@@ -49,7 +50,7 @@ dependencies {
     implementation 'com.shaishavgandhi:login-buttons:1.0.0'
 
     // Firebase
-    implementation 'com.google.firebase:firebase-auth:19.0.0'
+    implementation 'com.google.firebase:firebase-auth:19.1.0'
     implementation 'com.google.android.gms:play-services-auth:17.0.0'
 
     // Google Maps
@@ -61,10 +62,18 @@ dependencies {
     implementation 'com.facebook.android:facebook-login:5.5.0'
 
     // Retrofit
-    implementation 'com.squareup.retrofit2:retrofit:2.6.1'
+    implementation 'com.squareup.retrofit2:retrofit:2.6.2'
+    implementation 'com.squareup.retrofit2:adapter-rxjava2:2.6.2'
+    implementation 'com.squareup.retrofit2:converter-gson:2.6.2'
     implementation 'com.squareup.okhttp3:logging-interceptor:3.4.1'
-    implementation 'com.squareup.retrofit2:converter-gson:2.2.0'
     implementation 'com.google.code.gson:gson:2.8.5'
+
+    // RxAndroid + RxJava
+    implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
+    implementation 'com.squareup.retrofit2:adapter-rxjava2:2.6.2'
+
+    // Multi dex
+    implementation 'com.android.support:multidex:1.0.3'
 
     // Tests
     testImplementation 'junit:junit:4.12'
