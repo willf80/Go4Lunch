@@ -1,5 +1,7 @@
 package com.apiman.go4lunch.services;
 
+import java.util.regex.Pattern;
+
 /**
  * Source : http://villemin.gerard.free.fr/aGeograp/Distance.htm
  */
@@ -16,5 +18,26 @@ public class Utils {
         dist = Math.acos(dist) * earthRadius;
 
         return (int)Math.round(dist * 1000);
+    }
+
+    public static String getHour(String period) {
+        String p = period;
+
+        int carIndex = period.indexOf(':');
+        if(carIndex > -1) {
+            p = p.substring(carIndex + 2);
+
+            String[] hours = period.split(Pattern.quote("–"));
+            if(hours.length > 1){
+                p = hours[hours.length - 1];
+                p = p.trim();
+            }
+        }
+
+        return p;
+    }
+
+    public static boolean isClosingSoon() {
+        return false;
     }
 }

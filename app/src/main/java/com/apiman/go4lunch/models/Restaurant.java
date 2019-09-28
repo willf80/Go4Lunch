@@ -12,12 +12,16 @@ public class Restaurant extends RealmObject {
     private String address;
     private String website;
     private String phoneNumber;
+    private String timeText;
     private double latitude;
     private double longitude;
     private double rating;
     private double userRatingsTotal;
     private boolean isChosen;
+    private boolean openNow;
     private int distance;
+
+//    private RealmList<OpenCloseHour> periods;
 
     public String getId() {
         return id;
@@ -122,4 +126,28 @@ public class Restaurant extends RealmObject {
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
+
+    public boolean isOpenNow() {
+        return openNow;
+    }
+
+    public void setOpenNow(boolean openNow) {
+        this.openNow = openNow;
+    }
+
+    public String getTimeText() {
+        return timeText;
+    }
+
+    public void setTimeText(String timeText) {
+        this.timeText = timeText;
+    }
+
+    //    public RealmList<OpenCloseHour> getPeriods() {
+//        return periods;
+//    }
+//
+//    public void setPeriods(RealmList<OpenCloseHour> periods) {
+//        this.periods = periods;
+//    }
 }
