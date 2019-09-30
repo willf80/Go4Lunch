@@ -1,5 +1,7 @@
 package com.apiman.go4lunch.models;
 
+import java.util.Locale;
+
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
 
@@ -12,17 +14,27 @@ public class Restaurant extends RealmObject {
     private String address;
     private String website;
     private String phoneNumber;
-    private String timeText;
+    private String status;
     private double latitude;
     private double longitude;
     private double rating;
     private double userRatingsTotal;
     private boolean isChosen;
+    private boolean isClosingSoon;
     private boolean openNow;
     private int distance;
 
-//    private RealmList<OpenCloseHour> periods;
+    public String getDistanceWithSuffix() {
+        String suffix = "m";
+        if(distance > 1000) {
+            suffix = "km";
+            distance = distance / 1000;
+        }
 
+        return String.format(Locale.getDefault(), "%d%s", distance, suffix );
+    }
+
+    //---------- Getters and setters -------------
     public String getId() {
         return id;
     }
@@ -135,19 +147,19 @@ public class Restaurant extends RealmObject {
         this.openNow = openNow;
     }
 
-    public String getTimeText() {
-        return timeText;
+    public String getStatus() {
+        return status;
     }
 
-    public void setTimeText(String timeText) {
-        this.timeText = timeText;
+    public void setStatus(String status) {
+        this.status = status;
     }
 
-    //    public RealmList<OpenCloseHour> getPeriods() {
-//        return periods;
-//    }
-//
-//    public void setPeriods(RealmList<OpenCloseHour> periods) {
-//        this.periods = periods;
-//    }
+    public boolean isClosingSoon() {
+        return isClosingSoon;
+    }
+
+    public void setClosingSoon(boolean closingSoon) {
+        isClosingSoon = closingSoon;
+    }
 }

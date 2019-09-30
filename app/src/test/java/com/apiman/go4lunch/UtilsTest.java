@@ -1,221 +1,185 @@
 package com.apiman.go4lunch;
 
-import com.apiman.go4lunch.models.ApiDetailsResult;
-import com.apiman.go4lunch.models.OpenCloseHour;
+import com.apiman.go4lunch.models.DayTime;
+import com.apiman.go4lunch.models.Period;
 import com.apiman.go4lunch.services.Utils;
-import com.google.android.libraries.places.api.model.Period;
 
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import io.reactivex.Completable;
-import io.reactivex.Flowable;
-import io.reactivex.Observable;
-import io.reactivex.Scheduler;
-import io.reactivex.Single;
-import io.reactivex.schedulers.Schedulers;
+import java.util.Locale;
 
 import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertNotNull;
 import static junit.framework.TestCase.assertTrue;
 
 public class UtilsTest {
 
     @Test
     public void should_return_0m() {
-
         int result = Utils.distanceInMeters(0, 0, 0, 0);
-
         assertEquals(0, result);
     }
 
     @Test
-    public void should_return_100m() {
-
+    public void should_return_145m() {
         int result = Utils.distanceInMeters(48.915079, 2.289694, 48.914684, 2.287805);
-
         assertEquals(145, result);
     }
 
     @Test
-    public void should_get_last_closing_hour() {
-        String[] periods = new String[]{
-                "Monday: 11:00 AM – 11:00 PM",
-                "Tuesday: 11:00 AM – 11:00 PM",
-                "Wednesday: 11:00 AM – 11:00 PM",
-                "Thursday: 11:00 AM – 11:00 PM",
-                "Friday: 11:00 AM – 11:30 PM",
-                //"Saturday: 11:00 AM – 11:30 PM",
-                "Saturday: 11:00 AM – 2:30 PM, 6:00 – 10:30 PM",
-                "Sunday: 6:00 – 11:30 PM"
-        };
+    public void closingSoon_should_be_true_when_hour_plus_60_greater_than_closingTime() {
+        // Arrange
+        List<Period> periods = new ArrayList<>();
 
-//        String[] periods = new String[]{
-//                "Monday: 11:00 AM – 2:30 PM, 6:00 – 10:30 PM",
-//                "Tuesday: 11:00 AM – 2:50 PM, 6:00 – 10:30 PM",
-//                "Wednesday: 11:00 AM – 2:30 PM, 6:00 – 10:30 PM",
-//                "Thursday: 11:00 AM – 2:30 PM, 6:00 – 10:30 PM",
-//                "Friday: 11:00 AM – 2:30 PM, 6:00 – 10:30 PM",
-//                "Saturday: 11:00 AM – 2:30 PM, 6:00 – 10:30 PM",
-//                "Sunday: 6:00 – 10:30 PM"
-//        };
+        Period period = new Period();
+        period.open = new DayTime(6, "1100");
+        period.close = new DayTime(6, "2330");
 
-        String result = Utils.getHour(periods[4]);
+        periods.add(period);
 
-        assertEquals("11:30 PM", result);
-        assertEquals("10:30 PM", Utils.getHour(periods[5]));
+        // Act
+        boolean result = Utils.isClosingSoon(periods, 6, 2231);
+
+        // Assert
+        assertTrue(result);
     }
 
-
-    /**
-     * "periods" : [
-     *      {
-     *          "close" : {
-     *             "day" : 1,
-     *             "time" : "1500"
-     *          },
-     *          "open" : {
-     *             "day" : 1,
-     *             "time" : "0900"
-     *          }
-     *       },
-     *       {
-     *          "close" : {
-     *             "day" : 2,
-     *             "time" : "1500"
-     *          },
-     *          "open" : {
-     *             "day" : 2,
-     *             "time" : "0900"
-     *          }
-     *       },
-     *       {
-     *          "close" : {
-     *             "day" : 2,
-     *             "time" : "2300"
-     *          },
-     *          "open" : {
-     *             "day" : 2,
-     *             "time" : "1900"
-     *          }
-     *       },
-     *       {
-     *          "close" : {
-     *             "day" : 3,
-     *             "time" : "1500"
-     *          },
-     *          "open" : {
-     *             "day" : 3,
-     *             "time" : "0900"
-     *          }
-     *       },
-     *       {
-     *          "close" : {
-     *             "day" : 3,
-     *             "time" : "2300"
-     *          },
-     *          "open" : {
-     *             "day" : 3,
-     *             "time" : "1900"
-     *          }
-     *       },
-     *       {
-     *          "close" : {
-     *             "day" : 4,
-     *             "time" : "1500"
-     *          },
-     *          "open" : {
-     *             "day" : 4,
-     *             "time" : "0900"
-     *          }
-     *       },
-     *       {
-     *          "close" : {
-     *             "day" : 4,
-     *             "time" : "2300"
-     *          },
-     *          "open" : {
-     *             "day" : 4,
-     *             "time" : "1900"
-     *          }
-     *       },
-     *       {
-     *          "close" : {
-     *             "day" : 5,
-     *             "time" : "1500"
-     *          },
-     *          "open" : {
-     *             "day" : 5,
-     *             "time" : "0900"
-     *          }
-     *       },
-     *       {
-     *          "close" : {
-     *             "day" : 5,
-     *             "time" : "2300"
-     *          },
-     *          "open" : {
-     *             "day" : 5,
-     *             "time" : "1900"
-     *          }
-     *       },
-     *       {
-     *          "close" : {
-     *             "day" : 6,
-     *             "time" : "1500"
-     *          },
-     *          "open" : {
-     *             "day" : 6,
-     *             "time" : "1000"
-     *          }
-     *       },
-     *       {
-     *          "close" : {
-     *             "day" : 6,
-     *             "time" : "2300"
-     *          },
-     *          "open" : {
-     *             "day" : 6,
-     *             "time" : "1900"
-     *          }
-     *       }
-     *    ],
-     *    "weekday_text" : [
-     *       "Monday: 9:00 AM – 3:00 PM",
-     *       "Tuesday: 9:00 AM – 3:00 PM, 7:00 – 11:00 PM",
-     *       "Wednesday: 9:00 AM – 3:00 PM, 7:00 – 11:00 PM",
-     *       "Thursday: 9:00 AM – 3:00 PM, 7:00 – 11:00 PM",
-     *       "Friday: 9:00 AM – 3:00 PM, 7:00 – 11:00 PM",
-     *       "Saturday: 10:00 AM – 3:00 PM, 7:00 – 11:00 PM",
-     *       "Sunday: Closed"
-     *    ]
-     * },
-     * "place_id" : "ChIJ6VBalmVv5kcRoDnnmF8QYeg"
-     */
     @Test
-    public void Should_open() {
-        ApiDetailsResult.OpeningHour openCloseHour = new ApiDetailsResult.OpeningHour();
-        List<ApiDetailsResult.Period> periods = openCloseHour.periods;
+    public void with_2_periods_closingSoon_should_be_true_when_hour_plus_60_greater_than_closingTime() {
+        List<Period> periods = new ArrayList<>();
 
-        ApiDetailsResult.Period period = new ApiDetailsResult.Period();
-        period.open = new ApiDetailsResult.DayTime();
-        period.close = new ApiDetailsResult.DayTime();
-//        period.close.day
+        Period period1 = new Period();
+        period1.open = new DayTime(6, "1100");
+        period1.close = new DayTime(6, "1430");
 
-//        String[] periods = new String[]{
-//                "Monday: 11:00 AM – 2:30 PM, 6:00 – 10:30 PM",
-//                "Tuesday: 11:00 AM – 2:50 PM, 6:00 – 10:30 PM",
-//                "Wednesday: 11:00 AM – 2:30 PM, 6:00 – 10:30 PM",
-//                "Thursday: 11:00 AM – 2:30 PM, 6:00 – 10:30 PM",
-//                "Friday: 11:00 AM – 2:30 PM, 6:00 – 10:30 PM",
-//                "Saturday: 11:00 AM – 2:30 PM, 6:00 – 10:30 PM",
-//                "Sunday: 6:00 – 10:30 PM"
-//        };
+        Period period2 = new Period();
+        period2.open = new DayTime(6, "1800");
+        period2.close = new DayTime(6, "2230");
 
-//        String result = Utils.getHour(periods[4]);
-//
-//        assertEquals("11:30 PM", result);
-//        assertEquals("10:30 PM", Utils.getHour(periods[5]));
+        periods.add(period1);
+        periods.add(period2);
+
+        boolean result = Utils.isClosingSoon(periods, 6, 2200);
+
+        assertTrue(result);
+    }
+
+    private List<Period> createPeriodMock() {
+        List<Period> periods = new ArrayList<>();
+
+        Period period1 = new Period();
+        period1.open = new DayTime(6, "1100");
+        period1.close = new DayTime(6, "1430");
+
+        Period period2 = new Period();
+        period2.open = new DayTime(6, "1800");
+        period2.close = new DayTime(0, "0030");
+
+        Period period3 = new Period();
+        period3.open = new DayTime(5, "1000");
+        period3.close = new DayTime(6, "0030");
+
+        periods.add(period1);
+        periods.add(period2);
+        periods.add(period3);
+
+        return periods;
+    }
+
+    @Test
+    public void with_2_periods_closingSoon_should_be_true_when_closeTime_is_on_other_day() {
+        List<Period> periodList = createPeriodMock();
+
+        assertTrue(Utils.isClosingSoon(periodList, 6, 1331));
+        assertTrue(Utils.isClosingSoon(periodList, 6, 2331));
+        assertTrue(Utils.isClosingSoon(periodList, 6, 0));//00:00
+        assertTrue(Utils.isClosingSoon(periodList, 5, 2345));
+    }
+
+    @Test
+    public void should_get_current_period() {
+        List<Period> periodList = createPeriodMock();
+
+        Period period = Utils.getCurrentPeriod(periodList, 5, 1831);
+
+        assertNotNull(period);
+        assertEquals("1000", period.open.timeText);
+    }
+
+    @Test
+    public void should_get_time_in_fr() {
+        List<Period> periodList = createPeriodMock();
+
+        Period period = periodList.get(0);
+
+        assertNotNull(period);
+        assertEquals("14h30", period.close.getTime(Locale.FRANCE));
+    }
+
+    @Test
+    public void should_return_time_in_en() {
+        List<Period> periodList = createPeriodMock();
+
+        Period period = periodList.get(0);
+
+        assertNotNull(period);
+        assertEquals("2.30pm", period.close.getTime(Locale.ENGLISH));
+    }
+
+    @Test
+    public void should_return_restaurant_status_closed() {
+        List<Period> periodList = createPeriodMock();
+        boolean isOpenNow = false;
+        boolean isClosingSoon = false;
+
+        Period period = periodList.get(0);
+        String status = Utils.restaurantStatus(isOpenNow, isClosingSoon, period);
+
+        assertNotNull(period);
+        assertEquals("Closed", status);
+    }
+
+    @Test
+    public void should_return_restaurant_status_ClosingSoon() {
+        List<Period> periodList = createPeriodMock();
+        boolean isOpenNow = true;
+        boolean isClosingSoon = Utils.isClosingSoon(periodList, 6, 1331);
+        Period period = Utils.getCurrentPeriod(periodList, 6, 1331);
+
+        String status = Utils.restaurantStatus(isOpenNow, isClosingSoon, period);
+
+        assertNotNull(period);
+        assertEquals("Closing soon", status);
+    }
+
+    @Test
+    public void should_return_restaurant_status_Open24_7() {
+        boolean isOpenNow = true;
+        boolean isClosingSoon = false;
+        Period period = new Period();
+        period.open = new DayTime(0, "0000");
+
+        String status = Utils.restaurantStatus(isOpenNow, isClosingSoon, period);
+
+        assertNotNull(period);
+        assertEquals("Open 24/7", status);
+    }
+
+    @Test
+    public void should_return_restaurant_status_OpenUntil() {
+        List<Period> periodList = createPeriodMock();
+        boolean isOpenNow = true;
+        boolean isClosingSoon = false;
+
+//        period.open = "1100"
+//        period.close = "1430"
+        Period period = periodList.get(0);
+
+        String status = Utils.restaurantStatus(isOpenNow, isClosingSoon, period, Locale.ENGLISH);
+
+        assertNotNull(period);
+        assertEquals("Open until 2.30pm", status);
     }
 }

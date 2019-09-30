@@ -27,7 +27,6 @@
     <string name="fb_login_protocol_scheme">fb413607625946696</string>
     <string name="auth_failed">Authentication failed</string>
     <string name="api_base_url">https://maps.googleapis.com/</string>
-    <string name="p_api_key">AIzaSyCGcWXfOkzAelP5dgEuDahJ8_fjtNpPzek</string>
     <string name="p_radius">1000</string>
     <string name="p_type_restaurant">restaurant</string>
     <string name="p_type_distance">distance</string>

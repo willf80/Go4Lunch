@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModel;
 
 import com.apiman.go4lunch.models.ApiDetailsResult;
 import com.apiman.go4lunch.models.ApiResponse;
+import com.apiman.go4lunch.models.Period;
 import com.apiman.go4lunch.models.Restaurant;
 import com.apiman.go4lunch.services.RestaurantStreams;
 import com.apiman.go4lunch.services.Utils;
@@ -62,25 +63,25 @@ public class BaseViewModel extends ViewModel {
     private void loadRestaurants(final Context context, LatLng latLng) {
         if(latLng == null) return;
         RestaurantStreams.getNearbyRestaurants(context, latLng)
-                .enqueue(new Callback<ApiResponse>() {
-                    @Override
-                    public void onResponse(@NonNull Call<ApiResponse> call, @NonNull Response<ApiResponse> response) {
-                        if(!response.isSuccessful()) return;
+            .enqueue(new Callback<ApiResponse>() {
+                @Override
+                public void onResponse(@NonNull Call<ApiResponse> call, @NonNull Response<ApiResponse> response) {
+                    if(!response.isSuccessful()) return;
 
-                        ApiResponse apiResponse = response.body();
-                        if(apiResponse == null) return;
+                    ApiResponse apiResponse = response.body();
+                    if(apiResponse == null) return;
 
-                        List<Restaurant> restaurants = apiResponse.getRestaurants();
-                        saveRestaurants(restaurants);
+                    List<Restaurant> restaurants = apiResponse.getRestaurants();
+                    saveRestaurants(restaurants);
 
-                        getRestaurantsDetails(context, restaurants, latLng);
-                    }
+                    getRestaurantsDetails(context, restaurants, latLng);
+                }
 
-                    @Override
-                    public void onFailure(@NonNull  Call<ApiResponse> call, @NonNull  Throwable t) {
+                @Override
+                public void onFailure(@NonNull  Call<ApiResponse> call, @NonNull  Throwable t) {
 
-                    }
-                });
+                }
+            });
     }
 
     private Completable restaurantDetailsCompletable(final Context context, Restaurant restaurant, final LatLng currentLocation) {
@@ -118,43 +119,55 @@ public class BaseViewModel extends ViewModel {
                         .findAll());
     }
 
-    private Restaurant updatedRestaurantInfo(ApiDetailsResult detailsResult, LatLng currentLocation) {
-        try (Realm realm = Realm.getDefaultInstance()) {
+    private void applyRestaurantDetails(Restaurant restaurant, ApiDetailsResult detailsResult, int distance){
+        Realm realm = Realm.getDefaultInstance();
+        ApiDetailsResult.OpeningHour openingHour = detailsResult.getOpeningHour();
 
-            Restaurant restaurant = realm.where(Restaurant.class)
-                    .equalTo("placeId", detailsResult.getPlaceId())
-                    .findFirst();
+        realm.beginTransaction();
+        if (openingHour != null) {
+            List<Period> periodList = openingHour.periods;
 
-            if(restaurant == null) return null;
+            int dayIndex = Utils.getDayOfWeek();
+            int currentTime = Utils.getCurrentTime();
+            boolean isOpenNow = openingHour.isOpenNow;
+            boolean isClosingSoon = Utils.isClosingSoon(periodList, dayIndex, currentTime);
 
-            // Calculate distance
-            int distance = Utils.distanceInMeters(
-                    currentLocation.latitude, currentLocation.longitude,
-                    restaurant.getLatitude(), restaurant.getLongitude()
-            );
+            Period period = Utils.getCurrentPeriod(periodList, dayIndex, currentTime);
+            String status = Utils.restaurantStatus(isOpenNow, isClosingSoon, period);
 
-            // Update restaurant info
-            realm.beginTransaction();
-
-            // Set restaurant info
-            if (detailsResult.getOpeningHour() != null) {
-                restaurant.setOpenNow(detailsResult.getOpeningHour().isOpenNow);
-            }
-
-            if(detailsResult.getOpenCloseHour() != null) {
-                restaurant.setTimeText(detailsResult.getOpenCloseHour().getTimeText());
-            }
-
-            restaurant.setWebsite(detailsResult.getWebsite());
-            restaurant.setPhoneNumber(detailsResult.getPhoneNumber());
-            restaurant.setDistance(distance);
-
-//            realm.insertOrUpdate(detailsResult.getOpenCloseHourList());
-
-            realm.commitTransaction();
-            Log.e("Base", restaurant.getPlaceId() + " : " + restaurant.isOpenNow());
-            return restaurant;
+            restaurant.setOpenNow(isOpenNow);
+            restaurant.setClosingSoon(isClosingSoon);
+            restaurant.setStatus(status);
         }
+
+        restaurant.setWebsite(detailsResult.getWebsite());
+        restaurant.setPhoneNumber(detailsResult.getPhoneNumber());
+        restaurant.setDistance(distance);
+
+        realm.commitTransaction();
+    }
+
+    private Restaurant getRestaurantByPlaceId(String placeId) {
+        return Realm.getDefaultInstance().where(Restaurant.class)
+                .equalTo("placeId", placeId)
+                .findFirst();
+    }
+
+    private Restaurant updatedRestaurantInfo(ApiDetailsResult detailsResult, LatLng currentLocation) {
+        Restaurant restaurant = getRestaurantByPlaceId(detailsResult.getPlaceId());
+
+        if(restaurant == null) return null;
+
+        // Calculate distance
+        int distance = Utils.distanceInMeters(
+                currentLocation.latitude, currentLocation.longitude,
+                restaurant.getLatitude(), restaurant.getLongitude()
+        );
+
+        // Update restaurant info
+        applyRestaurantDetails(restaurant, detailsResult, distance);
+
+        return restaurant;
     }
     //---- END
 
