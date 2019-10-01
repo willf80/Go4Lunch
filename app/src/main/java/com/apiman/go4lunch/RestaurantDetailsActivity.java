@@ -12,12 +12,11 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.apiman.go4lunch.adapters.WorkmateListAdapter;
+import com.apiman.go4lunch.adapters.WorkmateJoiningAdapter;
+import com.apiman.go4lunch.fragments.ListViewFragment;
 import com.apiman.go4lunch.models.Restaurant;
 import com.apiman.go4lunch.models.Workmate;
-import com.apiman.go4lunch.fragments.ListViewFragment;
 import com.apiman.go4lunch.viewmodels.RestaurantDetailsViewModel;
-import com.apiman.go4lunch.viewmodels.WorkmatesViewModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
@@ -54,8 +53,7 @@ public class RestaurantDetailsActivity extends BaseActivity {
     Button websiteBtn;
 
     RestaurantDetailsViewModel mDetailsViewModel;
-    WorkmatesViewModel mWorkmatesViewModel;
-    WorkmateListAdapter mWorkmateListAdapter;
+    WorkmateJoiningAdapter mWorkmateJoiningAdapter;
     List<Workmate> mWorkmateList = new ArrayList<>();
 
     Realm mRealm;
@@ -76,27 +74,24 @@ public class RestaurantDetailsActivity extends BaseActivity {
         mPlaceId = getIntent().getStringExtra(ListViewFragment.EXTRA_PLACE_ID);
         fetchRestaurant();
 
-        mWorkmatesViewModel = ViewModelProviders
-                .of(this)
-                .get(WorkmatesViewModel.class);
-
         mDetailsViewModel = ViewModelProviders
                 .of(this)
                 .get(RestaurantDetailsViewModel.class);
 
         setupRecyclerView();
-        getData();
 
         listeners();
         applyInfo();
+
+        mDetailsViewModel.getWorkmatesOfRestaurant(mPlaceId);
     }
 
     private void listeners() {
         mDetailsViewModel
             .updatedListener()
-            .observe(this, aVoid -> {
-                Toast.makeText(RestaurantDetailsActivity.this, "Booking done !", Toast.LENGTH_SHORT).show();
-            });
+            .observe(this, s ->
+                Toast.makeText(RestaurantDetailsActivity.this, "Booking done !", Toast.LENGTH_SHORT).show()
+            );
 
 
         mDetailsViewModel
@@ -106,7 +101,10 @@ public class RestaurantDetailsActivity extends BaseActivity {
                 Log.d("TAG_RESTAURANT", s);
             });
 
-        markAsSelectedFab.setOnClickListener(view -> mDetailsViewModel.markRestaurantAsSelected(mPlaceId));
+        mDetailsViewModel.getPlaceWorkmatesLiveData()
+                .observe(this, workmates -> mWorkmateJoiningAdapter.setWorkmates(workmates));
+
+        markAsSelectedFab.setOnClickListener(view -> mDetailsViewModel.markRestaurantAsSelected(mRestaurant));
     }
 
     private void fetchRestaurant() {
@@ -134,13 +132,8 @@ public class RestaurantDetailsActivity extends BaseActivity {
     }
 
     private void setupRecyclerView(){
-        mWorkmateListAdapter = new WorkmateListAdapter(mWorkmateList);
+        mWorkmateJoiningAdapter = new WorkmateJoiningAdapter(mWorkmateList);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        mRecyclerView.setAdapter(mWorkmateListAdapter);
-    }
-
-    private void getData(){
-        mWorkmatesViewModel.getWorkmateJoinsList()
-                .observe(this, workmates -> mWorkmateListAdapter.setWorkmates(workmates));
+        mRecyclerView.setAdapter(mWorkmateJoiningAdapter);
     }
 }

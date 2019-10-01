@@ -10,21 +10,27 @@ public class DayTime {
     @SerializedName("time")
     public String timeText;
 
-    public DayTime() {
-    }
-
     public DayTime(int day, String timeText) {
         this.day = day;
         this.timeText = timeText;
     }
 
-    private int getHours() {
+    private int realTime() {
         int time = Integer.parseInt(timeText);
+        if(time >= 2400){
+            time -= 2400;
+        }
+
+        return time;
+    }
+
+    private int getHours() {
+        int time = realTime();
         return time / 100;
     }
 
     private int getMinutes() {
-        int time = Integer.parseInt(timeText);
+        int time = realTime();
         return time % 100;
     }
 
@@ -32,8 +38,8 @@ public class DayTime {
         int hour24 = getHours();
         int minutes = getMinutes();
 
-        if(locale.getLanguage().equals(new Locale("fr").getLanguage())){
-            return hour24 + "h" + minutes;
+        if(locale.getLanguage().equals(Locale.FRENCH.getLanguage())){
+            return hour24 + "h" + addLeftZeroInMinutes(minutes);
         }
 
         if(hour24 > 12) {
@@ -51,7 +57,7 @@ public class DayTime {
         return minutes + "";
     }
 
-    public DayTime copy(){
+    DayTime copy(){
         return new DayTime(day, timeText);
     }
 }
