@@ -5,6 +5,7 @@ import androidx.annotation.Nullable;
 import com.apiman.go4lunch.models.DayTime;
 import com.apiman.go4lunch.models.Period;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -32,6 +33,11 @@ public class Utils {
 
     public static int getDayOfWeek() {
         return  Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
+    }
+
+    public static String today() {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMdd", Locale.getDefault());
+        return simpleDateFormat.format(Calendar.getInstance().getTime());
     }
 
     public static int getCurrentTime() {

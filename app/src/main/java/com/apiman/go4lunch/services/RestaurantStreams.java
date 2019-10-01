@@ -29,7 +29,7 @@ public class RestaurantStreams {
     public static Observable<ApiDetailsResponse> getRestaurantDetailsObservable(Context context, String placeId) {
         Map<String, String> parameters = ApiClientConfig.getDefaultParameters(context);
         parameters.put("place_id", placeId);
-        parameters.put("fields", "opening_hours,international_phone_number,place_id");
+        parameters.put("fields", "opening_hours,international_phone_number,place_id,website");
 
         return ApiClientConfig
                 .getHttpClient(context)

@@ -1,4 +1,4 @@
-package com.apiman.go4lunch.ui.listview;
+package com.apiman.go4lunch.fragments;
 
 import android.content.Context;
 import android.content.Intent;
@@ -15,13 +15,14 @@ import com.apiman.go4lunch.R;
 import com.apiman.go4lunch.RestaurantDetailsActivity;
 import com.apiman.go4lunch.adapters.RestaurantListAdapter;
 import com.apiman.go4lunch.models.Restaurant;
-import com.apiman.go4lunch.ui.BaseFragment;
+import com.apiman.go4lunch.fragments.BaseFragment;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ListViewFragment extends BaseFragment implements RestaurantListAdapter.OnDispatchListener {
+    public static final String EXTRA_PLACE_ID = "placeId";
 
     private RestaurantListAdapter mRestaurantListAdapter;
     private List<Restaurant> mRestaurantList = new ArrayList<>();
@@ -61,6 +62,7 @@ public class ListViewFragment extends BaseFragment implements RestaurantListAdap
     @Override
     public void onItemClicked(Restaurant restaurant) {
         Intent intent = new Intent(getContext(), RestaurantDetailsActivity.class);
+        intent.putExtra(EXTRA_PLACE_ID, restaurant.getPlaceId());
         startActivity(intent);
     }
 }

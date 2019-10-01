@@ -1,11 +1,14 @@
 package com.apiman.go4lunch.adapters;
 
+import android.content.Context;
+import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.apiman.go4lunch.R;
@@ -55,7 +58,19 @@ public class RestaurantListAdapter extends RecyclerView.Adapter<RestaurantListAd
         holder.distanceTextView.setText(restaurant.getDistanceWithSuffix());
         holder.addressTextView.setText(restaurant.getAddress());
 
+        applyStyle(restaurant.isClosingSoon(), holder.statusTextView, holder.context);
+
         holder.itemView.setOnClickListener(v -> mOnDispatchListener.onItemClicked(restaurant));
+    }
+
+    private void applyStyle(boolean isClosingSoon, TextView textView, Context context) {
+        if(isClosingSoon) {
+            textView.setTextColor(ContextCompat.getColor(context, R.color.colorRed700));
+            textView.setTypeface(null, Typeface.BOLD_ITALIC);
+        }else {
+            textView.setTextColor(ContextCompat.getColor(context, R.color.colorGrey600));
+            textView.setTypeface(null, Typeface.ITALIC);
+        }
     }
 
     @Override
@@ -77,9 +92,12 @@ public class RestaurantListAdapter extends RecyclerView.Adapter<RestaurantListAd
         @BindView(R.id.textView5)
         TextView statusTextView;
 
+        Context context;
+
         RestaurantViewHolder(@NonNull View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
+            context = itemView.getContext();
         }
     }
 }

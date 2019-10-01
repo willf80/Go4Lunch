@@ -53,7 +53,7 @@
                 </LinearLayout>
 
                 <TextView
-                    android:id="@+id/textView8"
+                    android:id="@+id/addressTextView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:textColor="@android:color/white"
@@ -68,7 +68,7 @@
             android:orientation="horizontal">
 
             <Button
-                android:id="@+id/textView9"
+                android:id="@+id/callBtn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:drawablePadding="8dp"
@@ -82,7 +82,7 @@
                 android:text="Call" />
 
             <Button
-                android:id="@+id/textView90"
+                android:id="@+id/likeBtn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:drawablePadding="8dp"
@@ -96,7 +96,7 @@
                 android:text="Like" />
 
             <Button
-                android:id="@+id/textView91"
+                android:id="@+id/websiteBtn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:drawablePadding="8dp"

@@ -1,4 +1,4 @@
-package com.apiman.go4lunch.ui;
+package com.apiman.go4lunch.fragments;
 
 import android.Manifest;
 import android.app.Activity;
@@ -9,6 +9,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 
+import com.apiman.go4lunch.viewmodels.BaseViewModel;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
@@ -23,7 +24,7 @@ import java.util.Objects;
 
 public abstract class BaseFragment extends Fragment {
 
-    protected BaseViewModel mViewModel;
+    BaseViewModel mViewModel;
     private FusedLocationProviderClient mFusedLocationProviderClient;
     private Activity mActivity;
 
@@ -53,7 +54,7 @@ public abstract class BaseFragment extends Fragment {
         });
     }
 
-    protected void grantLocationPermission() {
+    void grantLocationPermission() {
         Dexter.withActivity(getActivity())
             .withPermission(Manifest.permission.ACCESS_FINE_LOCATION)
             .withListener(new PermissionListener() {

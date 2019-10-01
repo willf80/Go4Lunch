@@ -1,4 +1,4 @@
-package com.apiman.go4lunch.ui.maps;
+package com.apiman.go4lunch.fragments;
 
 import android.content.Context;
 import android.content.Intent;
@@ -15,7 +15,7 @@ import androidx.annotation.Nullable;
 
 import com.apiman.go4lunch.R;
 import com.apiman.go4lunch.models.Restaurant;
-import com.apiman.go4lunch.ui.BaseFragment;
+import com.apiman.go4lunch.fragments.BaseFragment;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;

@@ -1,4 +1,4 @@
-package com.apiman.go4lunch.ui.workmates;
+package com.apiman.go4lunch.viewmodels;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;

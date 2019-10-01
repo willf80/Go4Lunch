@@ -1,7 +1,6 @@
-package com.apiman.go4lunch.ui;
+package com.apiman.go4lunch.viewmodels;
 
 import android.content.Context;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
@@ -182,7 +181,7 @@ public class BaseViewModel extends ViewModel {
         return mLastKnowLocation;
     }
 
-    void setLastKnowLocation(LatLng lastKnowLocation) {
+    public void setLastKnowLocation(LatLng lastKnowLocation) {
         mLastKnowLocation.setValue(lastKnowLocation);
     }
 
@@ -190,7 +189,7 @@ public class BaseViewModel extends ViewModel {
         return mLocationPermission;
     }
 
-    void setLocationPermissionState(boolean state){
+    public void setLocationPermissionState(boolean state){
         mLocationPermission.setValue(state);
     }
 
