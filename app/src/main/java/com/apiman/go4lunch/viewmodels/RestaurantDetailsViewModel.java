@@ -20,11 +20,11 @@ import java.util.List;
 
 import io.realm.Realm;
 
-public class RestaurantDetailsViewModel extends ViewModel {
-    private static final String COL_PATH_BOOKING = "booking";
-    private static final String REF_WORKMATES = "workmates";
+import static com.apiman.go4lunch.services.FireStoreUtils.COL_PATH_BOOKING;
+import static com.apiman.go4lunch.services.FireStoreUtils.FIELD_PLACE_ID;
+import static com.apiman.go4lunch.services.FireStoreUtils.REF_WORKMATES;
 
-    private static final String FIELD_PLACE_ID = "placeId";
+public class RestaurantDetailsViewModel extends ViewModel {
 
     private MutableLiveData<String> mSuccessLiveData;
     private MutableLiveData<String> mErrorDispatcherLiveData;
@@ -32,7 +32,6 @@ public class RestaurantDetailsViewModel extends ViewModel {
     private MutableLiveData<List<Workmate>> mPlaceWorkmatesLiveData;
 
     private FirebaseUser mCurrentUser;
-
     private CollectionReference todayWorkmatesRef;
 
     public RestaurantDetailsViewModel() {
@@ -129,7 +128,7 @@ public class RestaurantDetailsViewModel extends ViewModel {
         if(restaurant == null) return;
 
         realm.beginTransaction();
-        restaurant.setChosen(true);
+        restaurant.setBook(true);
         realm.commitTransaction();
     }
 }

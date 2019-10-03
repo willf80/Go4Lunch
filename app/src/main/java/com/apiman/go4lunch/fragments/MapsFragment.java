@@ -21,6 +21,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.UiSettings;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -49,15 +50,11 @@ public class MapsFragment extends BaseFragment implements OnMapReadyCallback {
             Place.Field.TYPES
         );
 
-//    private PlacesClient mPlacesClient;
-//    private Realm mRealm;
-
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setHasOptionsMenu(true);
-//        mRealm = Realm.getDefaultInstance();
     }
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -70,9 +67,7 @@ public class MapsFragment extends BaseFragment implements OnMapReadyCallback {
             mapFragment.getMapAsync(this);
         }
 
-
         Places.initialize(getContext(), getString(R.string.google_maps_key));
-//        mPlacesClient = Places.createClient(getContext());
 
         return root;
     }
@@ -122,6 +117,13 @@ public class MapsFragment extends BaseFragment implements OnMapReadyCallback {
             MarkerOptions markerOptions = new MarkerOptions()
                     .title(restaurant.getName())
                     .position(new LatLng(restaurant.getLatitude(), restaurant.getLongitude()));
+
+            if(restaurant.isBook()) {
+                markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+            }else{
+                markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+            }
+
             mMap.addMarker(markerOptions);
         }
     }
@@ -196,7 +198,6 @@ public class MapsFragment extends BaseFragment implements OnMapReadyCallback {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if(item.getItemId() == R.id.app_bar_search){
-//            showSearchView();
             autoCompleteSearch();
         }
         return super.onOptionsItemSelected(item);

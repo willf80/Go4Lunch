@@ -11,10 +11,16 @@ import com.apiman.go4lunch.models.ApiDetailsResult;
 import com.apiman.go4lunch.models.ApiResponse;
 import com.apiman.go4lunch.models.Period;
 import com.apiman.go4lunch.models.Restaurant;
+import com.apiman.go4lunch.services.FireStoreUtils;
 import com.apiman.go4lunch.services.RestaurantStreams;
 import com.apiman.go4lunch.services.Utils;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -28,6 +34,9 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class BaseViewModel extends ViewModel {
+    private static final String FIELD_PLACE_ID = "placeId";
+    private static final String FIELD_TOTAL_WORKMATES = "totalWorkmates";
+    private static final String FIELD_IS_BOOK= "isBook";
 
     // Location permission state
     private MutableLiveData<Boolean> mLocationPermission;
@@ -39,6 +48,7 @@ public class BaseViewModel extends ViewModel {
     private MutableLiveData<List<Restaurant>> mRestaurantList;
 
     private Realm mRealm;
+    private CollectionReference todayBooksRef;
 
     public BaseViewModel() {
         mRealm = Realm.getDefaultInstance();
@@ -47,7 +57,9 @@ public class BaseViewModel extends ViewModel {
         mLocationPermission.setValue(false);
 
         mLastKnowLocation = new MutableLiveData<>();
-        mLastKnowLocation.setValue(null);
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        todayBooksRef = FireStoreUtils.getTodayBookingCollection(db);
     }
 
     //---- Start Restaurants
@@ -107,8 +119,74 @@ public class BaseViewModel extends ViewModel {
             .flatMapCompletable(restaurant -> restaurantDetailsCompletable(context, restaurant, currentLocation))
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .doFinally(this::updateRestaurantsInfo)// update restaurant list
+            .doFinally(this::getTodayBooking)// Get Cloud FireStore booking places
             .subscribe();
+    }
+
+    // Get Cloud FireStore booking places
+    private void getTodayBooking() {
+        todayBooksRef.get()
+            .addOnSuccessListener(query -> {
+                setAsBooking(query);
+                updateRestaurantsInfo();
+            })
+            .addOnFailureListener(e -> updateRestaurantsInfo());
+    }
+
+    private void resetBookingAndTotalWorkmatesValues(Realm realm) {
+        realm.beginTransaction();
+        realm.where(Restaurant.class)
+                .greaterThan(FIELD_TOTAL_WORKMATES, 0)
+                .findAll()
+                .setInt(FIELD_TOTAL_WORKMATES, 0);
+
+        realm.where(Restaurant.class)
+                .equalTo(FIELD_IS_BOOK, true)
+                .findAll()
+                .setBoolean(FIELD_IS_BOOK, false);
+        realm.commitTransaction();
+    }
+
+    private void setAsBooking(QuerySnapshot query) {
+        Realm realm = Realm.getDefaultInstance();
+
+        // Reset all booking and workmates
+        resetBookingAndTotalWorkmatesValues(realm);
+
+        realm.beginTransaction();
+        HashMap<String, Integer> map = new HashMap<>();
+        for (DocumentSnapshot doc : query.getDocuments()) {
+            String placeId = doc.get(FIELD_PLACE_ID, String.class);
+            if(placeId == null) continue;
+
+            Restaurant restaurant = getRestaurantByPlaceId(placeId);
+            if(restaurant == null) continue;
+
+            if(map.containsKey(placeId)){
+                Integer current = map.get(placeId);
+                if(current == null) {
+                    current = 0;
+                }
+
+                map.put(placeId,  current + 1);
+            }else {
+                map.put(placeId, 1);
+            }
+
+            restaurant.setBook(true);
+
+        }
+        realm.commitTransaction();
+
+        realm.beginTransaction();
+        for (HashMap.Entry<String, Integer> entry: map.entrySet()){
+            Restaurant restaurant = getRestaurantByPlaceId(entry.getKey());
+
+            if(restaurant == null) continue;
+
+            restaurant.setTotalWorkmates(entry.getValue());
+        }
+        realm.commitTransaction();
     }
 
     private void updateRestaurantsInfo() {
@@ -148,7 +226,7 @@ public class BaseViewModel extends ViewModel {
 
     private Restaurant getRestaurantByPlaceId(String placeId) {
         return Realm.getDefaultInstance().where(Restaurant.class)
-                .equalTo("placeId", placeId)
+                .equalTo(FIELD_PLACE_ID, placeId)
                 .findFirst();
     }
 
@@ -168,6 +246,7 @@ public class BaseViewModel extends ViewModel {
 
         return restaurant;
     }
+
     //---- END
 
     private void saveRestaurants(List<Restaurant> restaurants) {

@@ -15,6 +15,7 @@ import com.apiman.go4lunch.R;
 import com.apiman.go4lunch.models.Restaurant;
 
 import java.util.List;
+import java.util.Locale;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -57,6 +58,8 @@ public class RestaurantListAdapter extends RecyclerView.Adapter<RestaurantListAd
         holder.addressTextView.setText(restaurant.getPlaceId());
         holder.distanceTextView.setText(restaurant.getDistanceWithSuffix());
         holder.addressTextView.setText(restaurant.getAddress());
+        holder.workmatesTextView.setText(
+                String.format(Locale.getDefault(), "(%d)", restaurant.getTotalWorkmates()));
 
         applyStyle(restaurant.isClosingSoon(), holder.statusTextView, holder.context);
 
@@ -91,6 +94,9 @@ public class RestaurantListAdapter extends RecyclerView.Adapter<RestaurantListAd
 
         @BindView(R.id.textView5)
         TextView statusTextView;
+
+        @BindView(R.id.workmatesTextView)
+        TextView workmatesTextView;
 
         Context context;
 

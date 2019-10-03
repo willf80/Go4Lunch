@@ -19,10 +19,11 @@ public class Restaurant extends RealmObject {
     private double longitude;
     private double rating;
     private double userRatingsTotal;
-    private boolean isChosen;
+    private boolean isBook;
     private boolean isClosingSoon;
     private boolean openNow;
     private int distance;
+    private int totalWorkmates = 0;
 
     public String getDistanceWithSuffix() {
         String suffix = "m";
@@ -83,12 +84,12 @@ public class Restaurant extends RealmObject {
         this.userRatingsTotal = userRatingsTotal;
     }
 
-    public boolean isChosen() {
-        return isChosen;
+    public boolean isBook() {
+        return isBook;
     }
 
-    public void setChosen(boolean chosen) {
-        isChosen = chosen;
+    public void setBook(boolean book) {
+        isBook = book;
     }
 
     public double getLatitude() {
@@ -161,5 +162,13 @@ public class Restaurant extends RealmObject {
 
     public void setClosingSoon(boolean closingSoon) {
         isClosingSoon = closingSoon;
+    }
+
+    public int getTotalWorkmates() {
+        return totalWorkmates;
+    }
+
+    public void setTotalWorkmates(int totalWorkmates) {
+        this.totalWorkmates = totalWorkmates;
     }
 }
