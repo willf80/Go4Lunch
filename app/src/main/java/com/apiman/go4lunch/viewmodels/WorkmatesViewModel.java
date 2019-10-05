@@ -5,6 +5,9 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.apiman.go4lunch.models.Workmate;
+import com.apiman.go4lunch.services.FireStoreUtils;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,30 +15,33 @@ import java.util.List;
 public class WorkmatesViewModel extends ViewModel {
 
     private MutableLiveData<List<Workmate>> mWorkmateList;
-    private MutableLiveData<List<Workmate>> mWorkmateJoinList;
 
     public WorkmatesViewModel() {
         mWorkmateList = new MutableLiveData<>();
-        mWorkmateJoinList = new MutableLiveData<>();
-
-        List<Workmate> workmateList = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
-            workmateList.add(new Workmate());
-        }
-        mWorkmateList.setValue(workmateList);
-
-        List<Workmate> workmateJoinList = new ArrayList<>();
-        for (int i = 0; i < 3; i++) {
-            workmateJoinList.add(new Workmate());
-        }
-        mWorkmateJoinList.setValue(workmateJoinList);
     }
 
-    public LiveData<List<Workmate>> getWorkmateList() {
+    public LiveData<List<Workmate>> getWorkmatesLiveData() {
         return mWorkmateList;
     }
 
-    public LiveData<List<Workmate>> getWorkmateJoinsList() {
-        return mWorkmateJoinList;
+    public void loadWorkmates() {
+        FireStoreUtils.getWorkmatesCollection()
+            .get()
+            .addOnSuccessListener(query -> fetchWorkmatesData(query))
+            .addOnFailureListener(e -> {
+
+            });
+    }
+
+    private void fetchWorkmatesData(QuerySnapshot query){
+        List<Workmate> workmateList = new ArrayList<>();
+        for (DocumentSnapshot doc : query.getDocuments()) {
+            Workmate workmate = doc.toObject(Workmate.class);
+            if(workmate == null) continue;
+
+            workmateList.add(workmate);
+        }
+
+        mWorkmateList.setValue(workmateList);
     }
 }

@@ -35,7 +35,7 @@ public class Utils {
         return  Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
     }
 
-    public static String today() {
+    static String today() {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMdd", Locale.getDefault());
         return simpleDateFormat.format(Calendar.getInstance().getTime());
     }
@@ -186,5 +186,13 @@ public class Utils {
         }
 
         return "Open until " + period.close.getTime(locale);
+    }
+
+    public static String shortName(String fullName) {
+        if(fullName == null) return null;
+
+        fullName = fullName.trim();
+        int index = fullName.indexOf(' ');
+        return fullName.substring(0, index).trim();
     }
 }

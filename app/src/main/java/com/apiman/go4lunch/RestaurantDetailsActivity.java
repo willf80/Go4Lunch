@@ -103,7 +103,7 @@ public class RestaurantDetailsActivity extends BaseActivity {
             });
 
         mDetailsViewModel.getPlaceWorkmatesLiveData()
-                .observe(this, workmates -> mWorkmateJoiningAdapter.setWorkmates(workmates));
+                .observe(this, bookings -> mWorkmateJoiningAdapter.setWorkmates(bookings));
     }
 
     private void fetchRestaurant() {

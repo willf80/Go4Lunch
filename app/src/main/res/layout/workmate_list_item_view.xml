@@ -24,7 +24,7 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_marginStart="112dp"
+        android:layout_marginStart="96dp"
         android:layout_marginTop="8dp"
         android:background="@color/colorGrey300"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -34,8 +34,8 @@
 
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/profile_image"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="8dp"
         android:src="@drawable/profile"

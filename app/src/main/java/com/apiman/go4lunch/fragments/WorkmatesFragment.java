@@ -18,6 +18,7 @@ import com.apiman.go4lunch.viewmodels.WorkmatesViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class WorkmatesFragment extends Fragment {
 
@@ -29,7 +30,11 @@ public class WorkmatesFragment extends Fragment {
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        mWorkmatesViewModel = ViewModelProviders.of(this).get(WorkmatesViewModel.class);
+
+        mWorkmatesViewModel = ViewModelProviders
+                .of(Objects.requireNonNull(getActivity()))
+                .get(WorkmatesViewModel.class);
+
         View root = inflater.inflate(R.layout.fragment_workmates, container, false);
         mRecyclerView = root.findViewById(R.id.recyclerView);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -37,8 +42,16 @@ public class WorkmatesFragment extends Fragment {
         mWorkmateListAdapter = new WorkmateListAdapter(mWorkmateList);
         mRecyclerView.setAdapter(mWorkmateListAdapter);
 
-        mWorkmatesViewModel.getWorkmateList().observe(this,
-                workmateList -> mWorkmateListAdapter.setWorkmates(workmateList));
+        workmatesListener();
+
+        //Load workmates
+        mWorkmatesViewModel.loadWorkmates();
+
         return root;
+    }
+
+    private void workmatesListener() {
+        mWorkmatesViewModel.getWorkmatesLiveData().observe(this,
+                workmateList -> mWorkmateListAdapter.setWorkmates(workmateList));
     }
 }

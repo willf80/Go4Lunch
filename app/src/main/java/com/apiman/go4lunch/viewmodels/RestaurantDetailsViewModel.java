@@ -5,14 +5,14 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import com.apiman.go4lunch.models.Booking;
 import com.apiman.go4lunch.models.Restaurant;
 import com.apiman.go4lunch.models.Workmate;
-import com.apiman.go4lunch.services.Utils;
+import com.apiman.go4lunch.services.FireStoreUtils;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -20,33 +20,29 @@ import java.util.List;
 
 import io.realm.Realm;
 
-import static com.apiman.go4lunch.services.FireStoreUtils.COL_PATH_BOOKING;
 import static com.apiman.go4lunch.services.FireStoreUtils.FIELD_PLACE_ID;
-import static com.apiman.go4lunch.services.FireStoreUtils.REF_WORKMATES;
+import static com.apiman.go4lunch.services.FireStoreUtils.FIELD_USER;
 
 public class RestaurantDetailsViewModel extends ViewModel {
 
     private MutableLiveData<String> mSuccessLiveData;
     private MutableLiveData<String> mErrorDispatcherLiveData;
-    private MutableLiveData<List<Workmate>> mAllWorkmatesLiveData;
+    private MutableLiveData<List<Booking>> mAllBookingsLiveData;
     private MutableLiveData<List<Workmate>> mPlaceWorkmatesLiveData;
 
     private FirebaseUser mCurrentUser;
-    private CollectionReference todayWorkmatesRef;
+    private CollectionReference todayBookingsRef;
 
     public RestaurantDetailsViewModel() {
         mSuccessLiveData = new MutableLiveData<>();
         mErrorDispatcherLiveData = new MutableLiveData<>();
-        mAllWorkmatesLiveData = new MutableLiveData<>();
+        mAllBookingsLiveData = new MutableLiveData<>();
         mPlaceWorkmatesLiveData = new MutableLiveData<>();
 
         FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
         mCurrentUser = firebaseAuth.getCurrentUser();
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        CollectionReference bookingRef = db.collection(COL_PATH_BOOKING);
-        String today = Utils.today();
-        todayWorkmatesRef = bookingRef.document(today).collection(REF_WORKMATES);
+        todayBookingsRef = FireStoreUtils.getTodayBookingCollection();
     }
 
     public LiveData<String> updatedListener() {
@@ -57,8 +53,8 @@ public class RestaurantDetailsViewModel extends ViewModel {
         return mErrorDispatcherLiveData;
     }
 
-    public LiveData<List<Workmate>> getAllWorkmatesLiveData() {
-        return mAllWorkmatesLiveData;
+    public LiveData<List<Booking>> getAllBookingsLiveData() {
+        return mAllBookingsLiveData;
     }
 
     public LiveData<List<Workmate>> getPlaceWorkmatesLiveData() {
@@ -69,60 +65,62 @@ public class RestaurantDetailsViewModel extends ViewModel {
         String userRef = mCurrentUser.getUid();
 
         // Get the collections
-        Workmate workmate = new Workmate();
-        workmate.displayName = mCurrentUser.getDisplayName();
-        workmate.restaurantAddress = restaurant.getAddress();
-        workmate.restaurantName = restaurant.getName();
-        workmate.timestamps = Calendar.getInstance().getTime();
-        workmate.userId = mCurrentUser.getUid();
-        workmate.placeId = restaurant.getPlaceId();
+        Booking booking = new Booking();
+        booking.restaurantAddress = restaurant.getAddress();
+        booking.restaurantName = restaurant.getName();
+        booking.timestamps = Calendar.getInstance().getTime();
+        booking.placeId = restaurant.getPlaceId();
+        booking.user = FireStoreUtils.getCurrentUser(FirebaseAuth.getInstance().getCurrentUser());
 
-        todayWorkmatesRef.document(userRef).set(workmate)
+        todayBookingsRef.document(userRef).set(booking)
             .addOnSuccessListener(aVoid ->mSuccessLiveData.setValue(restaurant.getPlaceId()))
             .addOnFailureListener(e -> mErrorDispatcherLiveData.setValue(e.getMessage()));
     }
 
     public void getWorkmatesOfRestaurant(String placeId) {
-        todayWorkmatesRef.whereEqualTo(FIELD_PLACE_ID, placeId)
+        todayBookingsRef.whereEqualTo(FIELD_PLACE_ID, placeId)
             .get()
             .addOnSuccessListener(query -> {
-                List<Workmate> workmateList = new ArrayList<>();
+                List<Workmate> workmates = new ArrayList<>();
                 for (DocumentSnapshot doc : query.getDocuments()) {
-                    Workmate workmate = doc.toObject(Workmate.class);
+                    Workmate workmate = doc.get(FIELD_USER, Workmate.class);
+
                     if(workmate == null) continue;
-                    workmateList.add(workmate);
+                    workmates.add(workmate);
                 }
 
-                mPlaceWorkmatesLiveData.setValue(workmateList);
+                mPlaceWorkmatesLiveData.setValue(workmates);
             })
             .addOnFailureListener(e -> {
+                //Error
                 mErrorDispatcherLiveData.setValue(e.getMessage());
             });
     }
 
     public void updateBookingsOfDay() {
-        todayWorkmatesRef.get()
+        todayBookingsRef.get()
             .addOnSuccessListener(query -> {
                 for (DocumentSnapshot doc : query.getDocuments()) {
-                    Workmate workmate = doc.toObject(Workmate.class);
-                    if(workmate == null) continue;
+                    Booking booking = doc.toObject(Booking.class);
+                    if(booking == null) continue;
 
-                    updateRealmDatabase(workmate);
+                    updateRealmDatabase(booking.placeId);
                 }
 
                 //TODO : Refresh maps and list view
-//                mAllWorkmatesLiveData
+//                mAllBookingsLiveData
             })
             .addOnFailureListener(e -> {
+                //Error
                 mErrorDispatcherLiveData.setValue(e.getMessage());
             });
     }
 
-    private void updateRealmDatabase(@NonNull Workmate workmate){
+    private void updateRealmDatabase(@NonNull String placeId){
         Realm realm = Realm.getDefaultInstance();
 
         Restaurant restaurant = realm.where(Restaurant.class)
-                .equalTo("placeId", workmate.placeId)
+                .equalTo(FIELD_PLACE_ID, placeId)
                 .findFirst();
 
         if(restaurant == null) return;

@@ -17,7 +17,6 @@ import com.apiman.go4lunch.services.Utils;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.HashMap;
@@ -58,8 +57,7 @@ public class BaseViewModel extends ViewModel {
 
         mLastKnowLocation = new MutableLiveData<>();
 
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        todayBooksRef = FireStoreUtils.getTodayBookingCollection(db);
+        todayBooksRef = FireStoreUtils.getTodayBookingCollection();
     }
 
     //---- Start Restaurants

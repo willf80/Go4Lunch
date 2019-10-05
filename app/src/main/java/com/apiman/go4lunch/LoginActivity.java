@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.apiman.go4lunch.services.FireStoreUtils;
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
@@ -65,10 +66,14 @@ public class LoginActivity extends AppCompatActivity {
         facebookCallbackRegister();
 
         mFirebaseAuth = FirebaseAuth.getInstance();
+
+//        signOut();
     }
 
     private void facebookCallbackRegister() {
-        LoginManager.getInstance().registerCallback(mCallbackManager, new FacebookCallback<LoginResult>() {
+        LoginManager
+                .getInstance()
+                .registerCallback(mCallbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
                 Log.i(TAG, loginResult.getAccessToken().getToken());
@@ -82,9 +87,8 @@ public class LoginActivity extends AppCompatActivity {
 
             @Override
             public void onError(FacebookException error) {
-                Log.e(TAG, "Error", error);
-                Toast.makeText(LoginActivity.this, LoginActivity.this.getString(R.string.auth_failed), Toast.LENGTH_LONG)
-                        .show();
+                Log.e(TAG, "FacebookException", error);
+                authenticationFailedAction();
             }
         });
     }
@@ -92,9 +96,6 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
-        // Facebook ActivityResult
-        mCallbackManager.onActivityResult(requestCode, resultCode, data);
 
         // Google ActivityResult
         if(requestCode == RC_SIGN_IN) {
@@ -105,14 +106,18 @@ public class LoginActivity extends AppCompatActivity {
                 firebaseAuthWithGoogle(account);
             }catch (ApiException e) {
                 Log.w(TAG, "Google sign in failed", e);
-                updateUI(null);
+                authenticationFailedAction();
             }
+        }else {
+            // Facebook ActivityResult
+            mCallbackManager.onActivityResult(requestCode, resultCode, data);
         }
     }
 
     private void firebaseAuthWithFacebook(AccessToken accessToken) {
         AuthCredential authCredential = FacebookAuthProvider.getCredential(accessToken.getToken());
-        mFirebaseAuth.signInWithCredential(authCredential)
+        mFirebaseAuth
+                .signInWithCredential(authCredential)
                 .addOnCompleteListener(this::onTaskCompleteHandle);
     }
 
@@ -121,14 +126,25 @@ public class LoginActivity extends AppCompatActivity {
             // Sign in success, update UI with the signed-in user's information
             Log.d(TAG, "signInWithCredential:success");
 
-            FirebaseUser user = mFirebaseAuth.getCurrentUser();
-            updateUI(user);
+            FirebaseUser firebaseUser = mFirebaseAuth.getCurrentUser();
+
+            Task<Void> voidTask = FireStoreUtils.saveUser(firebaseUser);
+            if(voidTask == null){
+                authenticationFailedAction();
+                return;
+            }
+
+            voidTask.addOnSuccessListener(aVoid -> loginSuccessfully())
+                    .addOnFailureListener(e -> authenticationFailedAction());
         }else {
-            // If sign in fails, display a message to the user.
-            Log.w(TAG, "signInWithCredential:failure", task.getException());
-            Snackbar.make(findViewById(R.id.main_layout), LoginActivity.this.getString(R.string.auth_failed), Snackbar.LENGTH_SHORT).show();
-            updateUI(null);
+            authenticationFailedAction();
         }
+    }
+
+    private void authenticationFailedAction() {
+        // If sign in fails, display a message to the user.
+        Snackbar.make(findViewById(R.id.main_layout), LoginActivity.this.getString(R.string.auth_failed), Snackbar.LENGTH_SHORT).show();
+//        updateUI(null);
     }
 
     private void firebaseAuthWithGoogle(@NonNull GoogleSignInAccount signInAccount) {
@@ -160,12 +176,12 @@ public class LoginActivity extends AppCompatActivity {
                 .logInWithReadPermissions(this, Arrays.asList("public_profile", "email"));
     }
 
-//    private void signOut() {
-//        mFirebaseAuth.signOut();
-//
-//        mGoogleSignInClient.signOut()
-//                .addOnCompleteListener(task -> updateUI(null));
-//    }
+    private void signOut() {
+        mFirebaseAuth.signOut();
+
+        mGoogleSignInClient.signOut()
+                .addOnCompleteListener(task -> updateUI(null));
+    }
 
     private void updateUI(@Nullable FirebaseUser user) {
         if(user == null) {
@@ -173,6 +189,10 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
+        loginSuccessfully();
+    }
+
+    private void loginSuccessfully() {
         Toast.makeText(this, "Connected", Toast.LENGTH_LONG).show();
         startConnectedActivity();
     }

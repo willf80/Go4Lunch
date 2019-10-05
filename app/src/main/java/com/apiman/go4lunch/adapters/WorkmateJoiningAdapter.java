@@ -10,11 +10,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.apiman.go4lunch.R;
 import com.apiman.go4lunch.models.Workmate;
+import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import de.hdodenhof.circleimageview.CircleImageView;
 
 public class WorkmateJoiningAdapter extends RecyclerView.Adapter<WorkmateJoiningAdapter.WorkmateViewHolder> {
 
@@ -42,6 +44,13 @@ public class WorkmateJoiningAdapter extends RecyclerView.Adapter<WorkmateJoining
     public void onBindViewHolder(@NonNull WorkmateViewHolder holder, int position) {
         Workmate workmate = mWorkmates.get(position);
         holder.textView.setText(String.format("%s is joining!", workmate.displayName));
+
+        Picasso.get()
+                .load(workmate.photo)
+                .resize(64, 64)
+                .centerCrop()
+                .error(R.mipmap.ic_launcher)
+                .into(holder.profileImageView);
     }
 
     @Override
@@ -53,6 +62,9 @@ public class WorkmateJoiningAdapter extends RecyclerView.Adapter<WorkmateJoining
 
         @BindView(R.id.textView)
         TextView textView;
+
+        @BindView(R.id.profile_image)
+        CircleImageView profileImageView;
 
         WorkmateViewHolder(@NonNull View itemView) {
             super(itemView);
