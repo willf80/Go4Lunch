@@ -12,8 +12,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.apiman.go4lunch.R;
-import com.apiman.go4lunch.adapters.WorkmateListAdapter;
-import com.apiman.go4lunch.models.Workmate;
+import com.apiman.go4lunch.adapters.WorkmateBookingAdapter;
+import com.apiman.go4lunch.models.WorkmateBooking;
 import com.apiman.go4lunch.viewmodels.WorkmatesViewModel;
 
 import java.util.ArrayList;
@@ -23,8 +23,8 @@ import java.util.Objects;
 public class WorkmatesFragment extends Fragment {
 
     private RecyclerView mRecyclerView;
-    private WorkmateListAdapter mWorkmateListAdapter;
-    private List<Workmate> mWorkmateList = new ArrayList<>();
+    private WorkmateBookingAdapter mWorkmateBookingAdapter;
+    private List<WorkmateBooking> mWorkmateBookings = new ArrayList<>();
 
     private WorkmatesViewModel mWorkmatesViewModel;
 
@@ -39,8 +39,8 @@ public class WorkmatesFragment extends Fragment {
         mRecyclerView = root.findViewById(R.id.recyclerView);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        mWorkmateListAdapter = new WorkmateListAdapter(mWorkmateList);
-        mRecyclerView.setAdapter(mWorkmateListAdapter);
+        mWorkmateBookingAdapter = new WorkmateBookingAdapter(mWorkmateBookings);
+        mRecyclerView.setAdapter(mWorkmateBookingAdapter);
 
         workmatesListener();
 
@@ -52,6 +52,6 @@ public class WorkmatesFragment extends Fragment {
 
     private void workmatesListener() {
         mWorkmatesViewModel.getWorkmatesLiveData().observe(this,
-                workmateList -> mWorkmateListAdapter.setWorkmates(workmateList));
+                workmateList -> mWorkmateBookingAdapter.setWorkmateBookings(workmateList));
     }
 }

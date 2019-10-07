@@ -2,11 +2,14 @@ package com.apiman.go4lunch.services;
 
 import android.net.Uri;
 
+import androidx.annotation.NonNull;
+
 import com.apiman.go4lunch.models.Workmate;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.Date;
@@ -61,5 +64,10 @@ public class FireStoreUtils {
                 firebaseUser.getEmail(),
                 url,
                 new Date());
+    }
+
+    public static @NonNull Task<DocumentSnapshot> getWorkmateBookOfDay(String workmateId) {
+        return getTodayBookingCollection().document(workmateId)
+                .get();
     }
 }

@@ -13,12 +13,12 @@ import java.util.Locale;
 
 import io.reactivex.Flowable;
 
-/**
- * Source : http://villemin.gerard.free.fr/aGeograp/Distance.htm
- */
 public class Utils {
     private static final int earthRadius = 6_371;
 
+    /**
+     * Source : http://villemin.gerard.free.fr/aGeograp/Distance.htm
+     */
     public static int distanceInMeters(double lat1, double lon1, double lat2, double lon2) {
         if ((lat1 == lat2) && (lon1 == lon2)) {
             return 0;
