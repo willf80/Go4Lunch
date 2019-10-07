@@ -53,7 +53,7 @@
             app:layout_constraintTop_toTopOf="parent">
 
             <TextView
-                android:id="@+id/textView6"
+                android:id="@+id/userNameTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Falone Kouadio"
@@ -61,7 +61,7 @@
                 android:textColor="@android:color/white" />
 
             <TextView
-                android:id="@+id/textView11"
+                android:id="@+id/emailTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="willyfkouadio@gmail.com"

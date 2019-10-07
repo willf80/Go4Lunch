@@ -70,7 +70,7 @@ public class RestaurantDetailsViewModel extends ViewModel {
         booking.restaurantName = restaurant.getName();
         booking.timestamps = Calendar.getInstance().getTime();
         booking.placeId = restaurant.getPlaceId();
-        booking.user = FireStoreUtils.getCurrentUser(FirebaseAuth.getInstance().getCurrentUser());
+        booking.user = FireStoreUtils.getCurrentWorkmateUser(FirebaseAuth.getInstance().getCurrentUser());
 
         todayBookingsRef.document(userRef).set(booking)
             .addOnSuccessListener(aVoid ->mSuccessLiveData.setValue(restaurant.getPlaceId()))
@@ -128,5 +128,7 @@ public class RestaurantDetailsViewModel extends ViewModel {
         realm.beginTransaction();
         restaurant.setBook(true);
         realm.commitTransaction();
+
+        realm.close();
     }
 }

@@ -32,7 +32,7 @@ public class Utils {
     }
 
     public static int getDayOfWeek() {
-        return  Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
+        return  Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1;
     }
 
     static String today() {

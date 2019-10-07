@@ -14,8 +14,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.apiman.go4lunch.R;
+import com.apiman.go4lunch.RestaurantDetailsActivity;
 import com.apiman.go4lunch.models.Restaurant;
-import com.apiman.go4lunch.fragments.BaseFragment;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -24,6 +24,7 @@ import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
@@ -49,6 +50,8 @@ public class MapsFragment extends BaseFragment implements OnMapReadyCallback {
             Place.Field.ID,
             Place.Field.TYPES
         );
+
+    private String mPlaceIdSelected;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -97,6 +100,23 @@ public class MapsFragment extends BaseFragment implements OnMapReadyCallback {
                 zoomToLocation(latLng);
                 getRestaurants(getContext(), latLng);
             });
+
+        onMarkerClicked();
+        onInfoWindowClicked();
+    }
+
+    private void onMarkerClicked() {
+        mMap.setOnMarkerClickListener(marker -> {
+            mPlaceIdSelected = (String) marker.getTag();
+            return false;
+        });
+    }
+
+    private void onInfoWindowClicked() {
+        mMap.setOnInfoWindowClickListener(marker -> {
+            if(mPlaceIdSelected == null) return;
+            showRestaurantDetails(mPlaceIdSelected);
+        });
     }
 
     private void getRestaurants(Context context, LatLng latLng) {
@@ -124,7 +144,10 @@ public class MapsFragment extends BaseFragment implements OnMapReadyCallback {
                 markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
             }
 
-            mMap.addMarker(markerOptions);
+
+
+            Marker marker = mMap.addMarker(markerOptions);
+            marker.setTag(restaurant.getPlaceId());
         }
     }
 
@@ -216,5 +239,12 @@ public class MapsFragment extends BaseFragment implements OnMapReadyCallback {
                 .setLocationBias(bounds)
                 .build(getContext());
         startActivityForResult(intent, AUTOCOMPLETE_REQUEST_CODE);
+    }
+
+
+    private void showRestaurantDetails(String placeId) {
+        Intent intent = new Intent(getContext(), RestaurantDetailsActivity.class);
+        intent.putExtra(ListViewFragment.EXTRA_PLACE_ID, placeId);
+        startActivity(intent);
     }
 }

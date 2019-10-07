@@ -4,6 +4,7 @@ import android.net.Uri;
 
 import com.apiman.go4lunch.models.Workmate;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -30,17 +31,22 @@ public class FireStoreUtils {
         return db.collection(COL_PATH_WORKMATES);
     }
 
+    public static FirebaseUser getCurrentFirebaseUser() {
+        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+        return firebaseAuth.getCurrentUser();
+    }
+
     public static Task<Void> saveUser(FirebaseUser firebaseUser) {
         if(firebaseUser == null) return null;
 
-        Workmate workmate = getCurrentUser(firebaseUser);
+        Workmate workmate = getCurrentWorkmateUser(firebaseUser);
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         CollectionReference users = db.collection(COL_PATH_WORKMATES);
 
         return users.document(workmate.uuid).set(workmate);
     }
 
-    public static Workmate getCurrentUser(FirebaseUser firebaseUser){
+    public static Workmate getCurrentWorkmateUser(FirebaseUser firebaseUser){
         if(firebaseUser == null) return null;
 
         Uri uri = firebaseUser.getPhotoUrl();

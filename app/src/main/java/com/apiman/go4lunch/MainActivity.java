@@ -3,6 +3,8 @@ package com.apiman.go4lunch;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -15,11 +17,15 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
+import com.apiman.go4lunch.services.FireStoreUtils;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.auth.FirebaseUser;
+import com.squareup.picasso.Picasso;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import de.hdodenhof.circleimageview.CircleImageView;
 import io.realm.Realm;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
@@ -58,11 +64,24 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         configureBottomNavigationView();
 
-//        mSearchView.setOnQueryTextFocusChangeListener((v, hasFocus) -> {
-//            if(!hasFocus) {
-//                hideSearchView();
-//            }
-//        });
+        navigationViewHeader();
+    }
+
+    private void navigationViewHeader(){
+        View view = mNavigationView.getHeaderView(0);
+        TextView userNameTextView = view.findViewById(R.id.userNameTextView);
+        TextView emailTextView = view.findViewById(R.id.emailTextView);
+        CircleImageView profileImage = view.findViewById(R.id.profile_image);
+
+        FirebaseUser user = FireStoreUtils.getCurrentFirebaseUser();
+
+        userNameTextView.setText(user.getDisplayName());
+        emailTextView.setText(user.getEmail());
+
+        Picasso.get()
+                .load(user.getPhotoUrl())
+                .resize(80, 80)
+                .into(profileImage);
     }
 
     private void configureBottomNavigationView() {
@@ -77,8 +96,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(navView, navController);
-
-//        navController.addOnDestinationChangedListener(mOnDestinationChangedListener);
     }
 
     // Configure Drawer Layout
@@ -108,51 +125,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mNavigationView.setItemTextColor(colorStateList);
         mNavigationView.setItemIconTintList(colorStateList);
     }
-
-//    private NavController.OnDestinationChangedListener
-//        mOnDestinationChangedListener= new NavController.OnDestinationChangedListener() {
-//        @Override
-//        public void onDestinationChanged(@NonNull NavController controller,
-//                                         @NonNull NavDestination destination,
-//                                         @Nullable Bundle arguments) {
-//            switch (destination.getId()){
-//                case R.id.navigation_maps:
-//                case R.id.navigation_list_view:
-//                    mSearchView.setQueryHint(getString(R.string.search_restaurants));
-//                    break;
-//
-//                case R.id.navigation_workmates:
-//                    mSearchView.setQueryHint(getString(R.string.search_workmates));
-//                    break;
-//            }
-//        }
-//    };
-
-//    @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-////        getMenuInflater().inflate(R.menu.main_menu, menu);
-//
-//        return super.onCreateOptionsMenu(menu);
-//    }
-//
-//    @Override
-//    public boolean onOptionsItemSelected(MenuItem item) {
-////        if(item.getItemId() == R.id.app_bar_search){
-//////            showSearchView();
-////        }
-//        return super.onOptionsItemSelected(item);
-//    }
-
-//    private void showSearchView(){
-//        mToolbar.setVisibility(View.GONE);
-//        searchViewContainer.setVisibility(View.VISIBLE);
-//        mSearchView.requestFocus();
-//    }
-
-//    private void hideSearchView(){
-//        mToolbar.setVisibility(View.VISIBLE);
-//        searchViewContainer.setVisibility(View.GONE);
-//    }
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
