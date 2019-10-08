@@ -26,7 +26,9 @@
     <string name="facebook_app_id">413607625946696</string>
     <string name="fb_login_protocol_scheme">fb413607625946696</string>
     <string name="auth_failed">Authentication failed</string>
+    <string name="operation_failed">Operation failed, please retry later</string>
     <string name="api_base_url">https://maps.googleapis.com/</string>
+    <string name="place_photo_url">https://maps.googleapis.com/maps/api/place/photo?maxwidth=%d&amp;photoreference=%s&amp;key=%s</string>
     <string name="p_radius">1000</string>
     <string name="p_type_restaurant">restaurant</string>
     <string name="p_type_distance">distance</string>

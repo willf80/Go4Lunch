@@ -15,6 +15,7 @@ public class Restaurant extends RealmObject {
     private String website;
     private String phoneNumber;
     private String status;
+    private String photoReference;
     private double latitude;
     private double longitude;
     private double rating;
@@ -170,5 +171,13 @@ public class Restaurant extends RealmObject {
 
     public void setTotalWorkmates(int totalWorkmates) {
         this.totalWorkmates = totalWorkmates;
+    }
+
+    public String getPhotoReference() {
+        return photoReference;
+    }
+
+    public void setPhotoReference(String photoReference) {
+        this.photoReference = photoReference;
     }
 }

@@ -46,7 +46,7 @@ class ApiClientConfig {
 
     static Map<String, String> getDefaultParameters(Context context) {
         Map<String, String> map = new HashMap<>();
-        map.put("key", context.getString(R.string.p_api_key));
+        map.put("key", context.getString(R.string.place_api_key));
         return map;
     }
 }

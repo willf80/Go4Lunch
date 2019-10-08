@@ -2,6 +2,8 @@ package com.apiman.go4lunch.models;
 
 import com.google.gson.annotations.SerializedName;
 
+import java.util.List;
+
 public class ApiResult {
     private String id;
     private String name;
@@ -17,6 +19,8 @@ public class ApiResult {
     private double rating;
 
     private Geometry geometry;
+
+    private List<Photo> photos;
 
     public String getId() {
         return id;
@@ -92,6 +96,10 @@ public class ApiResult {
         if(geometry != null && geometry.location != null) {
             restaurant.setLatitude(geometry.location.lat);
             restaurant.setLongitude(geometry.location.lng);
+        }
+
+        if(photos != null && photos.size() > 0) {
+            restaurant.setPhotoReference(photos.get(0).reference);
         }
 
         return restaurant;

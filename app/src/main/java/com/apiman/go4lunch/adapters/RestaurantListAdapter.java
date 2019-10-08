@@ -5,6 +5,7 @@ import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -13,6 +14,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.apiman.go4lunch.R;
 import com.apiman.go4lunch.models.Restaurant;
+import com.apiman.go4lunch.services.RestaurantStreams;
+import com.squareup.picasso.Picasso;
 
 import java.util.List;
 import java.util.Locale;
@@ -64,6 +67,8 @@ public class RestaurantListAdapter extends RecyclerView.Adapter<RestaurantListAd
         applyStyle(restaurant.isClosingSoon(), holder.statusTextView, holder.context);
 
         holder.itemView.setOnClickListener(v -> mOnDispatchListener.onItemClicked(restaurant));
+
+        displayPhoto(holder.context, holder.photoImageView, restaurant.getPhotoReference());
     }
 
     private void applyStyle(boolean isClosingSoon, TextView textView, Context context) {
@@ -74,6 +79,13 @@ public class RestaurantListAdapter extends RecyclerView.Adapter<RestaurantListAd
             textView.setTextColor(ContextCompat.getColor(context, R.color.colorGrey600));
             textView.setTypeface(null, Typeface.ITALIC);
         }
+    }
+
+    private void displayPhoto(Context context, ImageView imageView, String photoReference){
+        Picasso.get()
+                .load(RestaurantStreams.getSmallPhotoUrl(context, photoReference))
+                .resize(100, 100)
+                .into(imageView);
     }
 
     @Override
@@ -97,6 +109,9 @@ public class RestaurantListAdapter extends RecyclerView.Adapter<RestaurantListAd
 
         @BindView(R.id.workmatesTextView)
         TextView workmatesTextView;
+
+        @BindView(R.id.imageView)
+        ImageView photoImageView;
 
         Context context;
 

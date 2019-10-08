@@ -19,7 +19,6 @@ import com.facebook.login.LoginResult;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
@@ -55,11 +54,7 @@ public class LoginActivity extends AppCompatActivity {
         ButterKnife.bind(this);
 
         // Google
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.default_web_client_id))
-                .requestEmail()
-                .build();
-        mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
+        mGoogleSignInClient = FireStoreUtils.getGoogleSignInClient(this);
 
         // Facebook
         mCallbackManager = CallbackManager.Factory.create();
@@ -144,12 +139,9 @@ public class LoginActivity extends AppCompatActivity {
     private void authenticationFailedAction() {
         // If sign in fails, display a message to the user.
         Snackbar.make(findViewById(R.id.main_layout), LoginActivity.this.getString(R.string.auth_failed), Snackbar.LENGTH_SHORT).show();
-//        updateUI(null);
     }
 
     private void firebaseAuthWithGoogle(@NonNull GoogleSignInAccount signInAccount) {
-        Log.d(TAG, "firebaseAuthWithGoogle:" + signInAccount.getId());
-
         AuthCredential credential = GoogleAuthProvider.getCredential(signInAccount.getIdToken(), null);
         mFirebaseAuth.signInWithCredential(credential)
                 .addOnCompleteListener(this::onTaskCompleteHandle);
@@ -176,12 +168,12 @@ public class LoginActivity extends AppCompatActivity {
                 .logInWithReadPermissions(this, Arrays.asList("public_profile", "email"));
     }
 
-    private void signOut() {
-        mFirebaseAuth.signOut();
-
-        mGoogleSignInClient.signOut()
-                .addOnCompleteListener(task -> updateUI(null));
-    }
+//    private void signOut() {
+//        mFirebaseAuth.signOut();
+//
+//        mGoogleSignInClient.signOut()
+//                .addOnCompleteListener(task -> updateUI(null));
+//    }
 
     private void updateUI(@Nullable FirebaseUser user) {
         if(user == null) {

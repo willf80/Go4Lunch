@@ -5,6 +5,7 @@ import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -27,9 +28,15 @@ import de.hdodenhof.circleimageview.CircleImageView;
 public class WorkmateBookingAdapter extends RecyclerView.Adapter<WorkmateBookingAdapter.WorkmateViewHolder> {
 
     private List<WorkmateBooking> mWorkmateBookings;
+    private DispatchListener mDispatchListener;
 
-    public WorkmateBookingAdapter(List<WorkmateBooking> workmateBookings) {
+    public interface DispatchListener{
+        void onClick(WorkmateBooking workmateBooking);
+    }
+
+    public WorkmateBookingAdapter(List<WorkmateBooking> workmateBookings, DispatchListener listener) {
         mWorkmateBookings = workmateBookings;
+        mDispatchListener = listener;
     }
 
     public void setWorkmateBookings(List<WorkmateBooking> workmateBookings) {
@@ -64,15 +71,18 @@ public class WorkmateBookingAdapter extends RecyclerView.Adapter<WorkmateBooking
         }
 
         applyStyle(areBooked, holder.textView, holder.context);
-
         holder.textView.setText(text);
+        holder.itemView.setOnClickListener(v -> mDispatchListener.onClick(workmateBooking));
+        loadImage(workmate.photo, holder.profileImageView);
+    }
 
+    private void loadImage(String photoUrl, ImageView imageView) {
         Picasso.get()
-                .load(workmate.photo)
+                .load(photoUrl)
                 .resize(64, 64)
                 .centerCrop()
                 .error(R.mipmap.ic_launcher)
-                .into(holder.profileImageView);
+                .into(imageView);
     }
 
     private void applyStyle(boolean areBooked, TextView textView, Context context) {
@@ -102,7 +112,6 @@ public class WorkmateBookingAdapter extends RecyclerView.Adapter<WorkmateBooking
         WorkmateViewHolder(@NonNull View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
-
             context = itemView.getContext();
         }
     }

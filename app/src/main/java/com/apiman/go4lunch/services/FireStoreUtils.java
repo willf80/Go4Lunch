@@ -1,10 +1,15 @@
 package com.apiman.go4lunch.services;
 
+import android.content.Context;
 import android.net.Uri;
 
 import androidx.annotation.NonNull;
 
+import com.apiman.go4lunch.R;
 import com.apiman.go4lunch.models.Workmate;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -16,9 +21,11 @@ import java.util.Date;
 
 public class FireStoreUtils {
     private static final String COL_PATH_WORKMATES = "workmates";
-    public static final String COL_PATH_BOOKINGS = "bookings";
-    public static final String COL_PATH_BOOKS = "books";
+    private static final String COL_PATH_BOOKINGS = "bookings";
+    private static final String COL_PATH_BOOKS = "books";
 
+//    public static final String FIELD_RESTAU_NAME = "name";
+//    public static final String FIELD_RESTAU_ADDRESS = "address";
     public static final String FIELD_PLACE_ID = "placeId";
     public static final String FIELD_USER = "user";
 
@@ -27,6 +34,14 @@ public class FireStoreUtils {
         CollectionReference bookingRef = db.collection(COL_PATH_BOOKINGS);
         String today = Utils.today();
         return bookingRef.document(today).collection(COL_PATH_BOOKS);
+    }
+
+    public static GoogleSignInClient getGoogleSignInClient(Context context) {
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(context.getString(R.string.default_web_client_id))
+                .requestEmail()
+                .build();
+        return GoogleSignIn.getClient(context, gso);
     }
 
     public static CollectionReference getWorkmatesCollection() {

@@ -3,9 +3,9 @@ package com.apiman.go4lunch;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -16,10 +16,12 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.apiman.go4lunch.adapters.WorkmateJoiningAdapter;
-import com.apiman.go4lunch.fragments.ListViewFragment;
 import com.apiman.go4lunch.models.Restaurant;
 import com.apiman.go4lunch.models.Workmate;
+import com.apiman.go4lunch.services.FireStoreUtils;
+import com.apiman.go4lunch.services.RestaurantStreams;
 import com.apiman.go4lunch.viewmodels.RestaurantDetailsViewModel;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +29,9 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 import io.realm.Realm;
 
 public class RestaurantDetailsActivity extends BaseActivity {
@@ -52,6 +57,9 @@ public class RestaurantDetailsActivity extends BaseActivity {
     @BindView(R.id.websiteBtn)
     Button websiteBtn;
 
+    @BindView(R.id.coverPhoto)
+    ImageView coverPhoto;
+
     RestaurantDetailsViewModel mDetailsViewModel;
     WorkmateJoiningAdapter mWorkmateJoiningAdapter;
     List<Workmate> mWorkmateList = new ArrayList<>();
@@ -59,6 +67,7 @@ public class RestaurantDetailsActivity extends BaseActivity {
     Realm mRealm;
     String mPlaceId;
     Restaurant mRestaurant;
+    Disposable disposable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,8 +79,8 @@ public class RestaurantDetailsActivity extends BaseActivity {
 
         mRealm = Realm.getDefaultInstance();
 
+        mPlaceId = getIntent().getStringExtra(FireStoreUtils.FIELD_PLACE_ID);
 
-        mPlaceId = getIntent().getStringExtra(ListViewFragment.EXTRA_PLACE_ID);
         fetchRestaurant();
 
         mDetailsViewModel = ViewModelProviders
@@ -81,7 +90,6 @@ public class RestaurantDetailsActivity extends BaseActivity {
         setupRecyclerView();
 
         listeners();
-        applyInfo();
 
         mDetailsViewModel.getWorkmatesOfRestaurant(mPlaceId);
     }
@@ -97,19 +105,37 @@ public class RestaurantDetailsActivity extends BaseActivity {
 
         mDetailsViewModel
             .errorDispatcherLister()
-            .observe(this, s -> {
-                Toast.makeText(RestaurantDetailsActivity.this, s, Toast.LENGTH_SHORT).show();
-                Log.d("TAG_RESTAURANT", s);
-            });
+            .observe(this, s ->
+                    Toast.makeText(RestaurantDetailsActivity.this, s, Toast.LENGTH_SHORT)
+                        .show());
 
-        mDetailsViewModel.getPlaceWorkmatesLiveData()
+        mDetailsViewModel
+                .getPlaceWorkmatesLiveData()
                 .observe(this, bookings -> mWorkmateJoiningAdapter.setWorkmates(bookings));
     }
 
     private void fetchRestaurant() {
         mRestaurant = mRealm.where(Restaurant.class)
-                .equalTo("placeId", mPlaceId)
+                .equalTo(FireStoreUtils.FIELD_PLACE_ID, mPlaceId)
                 .findFirst();
+
+        if(mRestaurant != null) {
+            applyInfo();
+            return;
+        }
+
+        loadOnlineRestaurantDetails();
+    }
+
+    private void loadOnlineRestaurantDetails() {
+        disposable = RestaurantStreams
+                .getRestaurantDetailsExtractedObservable(this, mPlaceId)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(restaurant -> {
+                    mRestaurant = restaurant;
+                    applyInfo();
+                });
     }
 
     private void applyInfo() {
@@ -123,11 +149,25 @@ public class RestaurantDetailsActivity extends BaseActivity {
 
         if(mRestaurant.getWebsite() == null) {
             websiteBtn.setVisibility(View.GONE);
+        }else {
+            websiteBtn.setVisibility(View.VISIBLE);
         }
 
         if(mRestaurant.getPhoneNumber() == null) {
             callBtn.setVisibility(View.GONE);
+        }else{
+            callBtn.setVisibility(View.VISIBLE);
         }
+
+        loadCoverPhoto();
+    }
+
+    private void loadCoverPhoto() {
+        Picasso.get()
+                .load(RestaurantStreams.getMediumPhotoUrl(this, mRestaurant.getPhotoReference()))
+                .centerCrop()
+                .resize(400, 400)
+                .into(coverPhoto);
     }
 
     private void setupRecyclerView(){
@@ -158,5 +198,13 @@ public class RestaurantDetailsActivity extends BaseActivity {
                         (dialog, which) -> mDetailsViewModel.markRestaurantAsSelected(mRestaurant))
                 .create()
                 .show();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(disposable != null && !disposable.isDisposed()){
+            disposable.dispose();
+        }
     }
 }

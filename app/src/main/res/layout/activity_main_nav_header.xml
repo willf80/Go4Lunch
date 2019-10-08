@@ -58,7 +58,8 @@
                 android:layout_height="wrap_content"
                 android:text="Falone Kouadio"
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                android:textColor="@android:color/white" />
+                android:textColor="@android:color/white"
+                android:textStyle="bold"/>
 
             <TextView
                 android:id="@+id/emailTextView"
