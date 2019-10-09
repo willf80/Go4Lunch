@@ -15,6 +15,9 @@ public interface RestaurantService {
     @GET("maps/api/place/nearbysearch/json")
     Call<ApiResponse> getNearbyRestaurants(@QueryMap Map<String, String> parameters);
 
+    @GET("maps/api/place/nearbysearch/json")
+    Observable<ApiResponse> getNearbyRestaurantsObservable(@QueryMap Map<String, String> parameters);
+
     @GET("maps/api/place/details/json")
     Observable<ApiDetailsResponse> getRestaurantDetailsObservable(@QueryMap Map<String, String> parameters);
 

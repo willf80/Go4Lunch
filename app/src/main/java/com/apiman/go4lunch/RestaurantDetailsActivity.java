@@ -36,6 +36,8 @@ import io.realm.Realm;
 
 public class RestaurantDetailsActivity extends BaseActivity {
 
+    public static final int BOOKED_SUCCESSFULLY_RESULT_CODE = 8001;
+
     @BindView(R.id.recyclerView)
     RecyclerView mRecyclerView;
 
@@ -99,7 +101,9 @@ public class RestaurantDetailsActivity extends BaseActivity {
             .updatedListener()
             .observe(this, s -> {
                     mDetailsViewModel.getWorkmatesOfRestaurant(mPlaceId);
-                    Toast.makeText(RestaurantDetailsActivity.this, "Booking done !", Toast.LENGTH_SHORT).show();
+                    setResult(BOOKED_SUCCESSFULLY_RESULT_CODE);
+
+                    Toast.makeText(RestaurantDetailsActivity.this, "Restaurant booked successfully !", Toast.LENGTH_SHORT).show();
                 }
             );
 

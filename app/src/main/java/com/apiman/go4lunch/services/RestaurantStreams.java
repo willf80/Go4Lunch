@@ -30,6 +30,17 @@ public class RestaurantStreams {
                 .getNearbyRestaurants(parameters);
     }
 
+    public static Observable<ApiResponse> getNearbyRestaurantsObservable(Context context, LatLng latLng) {
+        Map<String, String> parameters = ApiClientConfig.getNearbyDefaultParameters(context);
+        parameters.put("location", String.format(Locale.getDefault(),
+                "%s,%s", latLng.latitude, latLng.longitude));
+
+        return ApiClientConfig
+                .getHttpClient(context)
+                .create(RestaurantService.class)
+                .getNearbyRestaurantsObservable(parameters);
+    }
+
 
     public static Observable<ApiDetailsResponse> getRestaurantDetailsObservable(Context context, String placeId) {
         return getRestaurantDetailsObservable(context, placeId,

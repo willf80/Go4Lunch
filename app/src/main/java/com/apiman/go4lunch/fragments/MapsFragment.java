@@ -35,6 +35,8 @@ import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 import java.util.Arrays;
 import java.util.List;
 
+import static com.apiman.go4lunch.services.FireStoreUtils.FIELD_PLACE_ID;
+
 public class MapsFragment extends BaseFragment implements OnMapReadyCallback {
     private static final int AUTOCOMPLETE_REQUEST_CODE = 1;
     private static final float DEFAULT_ZOOM = 15.0f;
@@ -144,8 +146,6 @@ public class MapsFragment extends BaseFragment implements OnMapReadyCallback {
                 markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
             }
 
-
-
             Marker marker = mMap.addMarker(markerOptions);
             marker.setTag(restaurant.getPlaceId());
         }
@@ -244,7 +244,7 @@ public class MapsFragment extends BaseFragment implements OnMapReadyCallback {
 
     private void showRestaurantDetails(String placeId) {
         Intent intent = new Intent(getContext(), RestaurantDetailsActivity.class);
-        intent.putExtra(ListViewFragment.EXTRA_PLACE_ID, placeId);
+        intent.putExtra(FIELD_PLACE_ID, placeId);
         startActivity(intent);
     }
 }

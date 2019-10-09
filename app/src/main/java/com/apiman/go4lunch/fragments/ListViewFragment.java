@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -15,14 +16,14 @@ import com.apiman.go4lunch.R;
 import com.apiman.go4lunch.RestaurantDetailsActivity;
 import com.apiman.go4lunch.adapters.RestaurantListAdapter;
 import com.apiman.go4lunch.models.Restaurant;
-import com.apiman.go4lunch.fragments.BaseFragment;
+import com.apiman.go4lunch.services.FireStoreUtils;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ListViewFragment extends BaseFragment implements RestaurantListAdapter.OnDispatchListener {
-    public static final String EXTRA_PLACE_ID = "placeId";
+    private static final int BOOKING_REQUEST_CODE = 8000;
 
     private RestaurantListAdapter mRestaurantListAdapter;
     private List<Restaurant> mRestaurantList = new ArrayList<>();
@@ -40,29 +41,48 @@ public class ListViewFragment extends BaseFragment implements RestaurantListAdap
         recyclerView.setAdapter(mRestaurantListAdapter);
 
         observeLastKnowLocation();
+        observeRestaurant();
 
         return root;
     }
 
     private void observeLastKnowLocation() {
-        mViewModel.getLastKnowLocation()
-                .observe(this, latLng -> {
-                    if(latLng == null) return;
+        mViewModel
+            .getLastKnowLocation()
+            .observe(this, latLng -> {
+                if(latLng == null) return;
+                getRestaurants(getContext(), latLng);
+            });
+    }
 
-                    getRestaurants(getContext(), latLng);
-                });
+    private void observeRestaurant() {
+        mViewModel
+                .getRestaurantsLiveData()
+                .observe(this, restaurants -> mRestaurantListAdapter.setRestaurants(restaurants));
     }
 
     private void getRestaurants(Context context, LatLng latLng) {
-        mViewModel.getRestaurantList(context, latLng)
-                .observe(this, restaurants ->
-                        mRestaurantListAdapter.setRestaurants(restaurants));
+        mViewModel.getRestaurantList(context, latLng);
     }
 
     @Override
     public void onItemClicked(Restaurant restaurant) {
         Intent intent = new Intent(getContext(), RestaurantDetailsActivity.class);
-        intent.putExtra(EXTRA_PLACE_ID, restaurant.getPlaceId());
-        startActivity(intent);
+        intent.putExtra(FireStoreUtils.FIELD_PLACE_ID, restaurant.getPlaceId());
+        startActivityForResult(intent, BOOKING_REQUEST_CODE);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if(requestCode == BOOKING_REQUEST_CODE &&
+            resultCode == RestaurantDetailsActivity.BOOKED_SUCCESSFULLY_RESULT_CODE) {
+            refreshData();
+        }
+    }
+
+    private void refreshData() {
+        mViewModel.refreshData(getContext());
     }
 }

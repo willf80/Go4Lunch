@@ -2,7 +2,6 @@ package com.apiman.go4lunch.viewmodels;
 
 import android.content.Context;
 
-import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
@@ -26,11 +25,9 @@ import java.util.concurrent.TimeUnit;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import io.realm.Realm;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class BaseViewModel extends ViewModel {
     private static final String FIELD_PLACE_ID = "placeId";
@@ -44,10 +41,11 @@ public class BaseViewModel extends ViewModel {
     private MutableLiveData<LatLng> mLastKnowLocation;
 
     // List of restaurants
-    private MutableLiveData<List<Restaurant>> mRestaurantList;
+    private MutableLiveData<List<Restaurant>> mRestaurantsLiveData;
 
     private Realm mRealm;
     private CollectionReference todayBooksRef;
+    private LatLng lastLatLng;
 
     public BaseViewModel() {
         mRealm = Realm.getDefaultInstance();
@@ -56,41 +54,91 @@ public class BaseViewModel extends ViewModel {
         mLocationPermission.setValue(false);
 
         mLastKnowLocation = new MutableLiveData<>();
+        mRestaurantsLiveData = new MutableLiveData<>();
 
         todayBooksRef = FireStoreUtils.getTodayBookingCollection();
     }
 
     //---- Start Restaurants
     public LiveData<List<Restaurant>> getRestaurantList(Context context, LatLng latLng) {
-        if(mRestaurantList == null) {
-            mRestaurantList = new MutableLiveData<>();
+        if(lastLatLng == null) {
+            lastLatLng = latLng;
             loadRestaurants(context, latLng);
         }
-        return mRestaurantList;
+        return mRestaurantsLiveData;
+    }
+
+    public void refreshData(Context context) {
+        loadRestaurants(context, lastLatLng);
     }
 
     private void loadRestaurants(final Context context, LatLng latLng) {
         if(latLng == null) return;
-        RestaurantStreams.getNearbyRestaurants(context, latLng)
-            .enqueue(new Callback<ApiResponse>() {
-                @Override
-                public void onResponse(@NonNull Call<ApiResponse> call, @NonNull Response<ApiResponse> response) {
-                    if(!response.isSuccessful()) return;
 
-                    ApiResponse apiResponse = response.body();
-                    if(apiResponse == null) return;
+        Disposable disposable = RestaurantStreams.getNearbyRestaurantsObservable(context, latLng)
+                .map(ApiResponse::getRestaurants)
+                .flatMapIterable(restaurants -> restaurants)
+                .flatMap(restaurant -> getRestaurantItemDetails(context, restaurant, latLng))//Get restaurant details
+                .toList()
+//                .reduce(new ArrayList<Restaurant>(), (restaurants, restaurant) -> {
+//                    ApiDetailsResponse response = RestaurantStreams
+//                            .getRestaurantDetailsObservable(context, restaurant.getPlaceId())
+////                            .subscribeOn(Schedulers.io())
+////                            .observeOn(AndroidSchedulers.mainThread())
+//                            .blockingSingle(new ApiDetailsResponse());
+//
+//                    Restaurant newRestaurant = restaurant;
+//                    ApiDetailsResult result = response.getApiResult();
+//                    if(result == null) {
+//                        restaurants.add(newRestaurant);
+//                        return restaurants;
+//                    }
+//
+//                    newRestaurant = updatedRestaurantInfo(restaurant, result, latLng);
+//                    restaurants.add(newRestaurant);
+//
+//                    return restaurants;
+//                })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(apiResponse -> {
+//                    getTodayBooking();
+                    mRestaurantsLiveData.setValue(apiResponse);
+                });
 
-                    List<Restaurant> restaurants = apiResponse.getRestaurants();
-                    saveRestaurants(restaurants);
+//        RestaurantStreams.getNearbyRestaurants(context, latLng)
+//            .enqueue(new Callback<ApiResponse>() {
+//                @Override
+//                public void onResponse(@NonNull Call<ApiResponse> call, @NonNull Response<ApiResponse> response) {
+//                    if(!response.isSuccessful()) return;
+//
+//                    ApiResponse apiResponse = response.body();
+//                    if(apiResponse == null) return;
+//
+//                    List<Restaurant> restaurants = apiResponse.getRestaurants();
+//                    saveRestaurants(restaurants);
+//
+//                    getRestaurantsDetails(context, restaurants, latLng);
+//                }
+//
+//                @Override
+//                public void onFailure(@NonNull  Call<ApiResponse> call, @NonNull  Throwable t) {
+//
+//                }
+//            });
+    }
 
-                    getRestaurantsDetails(context, restaurants, latLng);
-                }
+    private Observable<Restaurant> getRestaurantItemDetails(Context context, Restaurant restaurant, LatLng latLng) {
+        return RestaurantStreams
+                .getRestaurantDetailsObservable(context, restaurant.getPlaceId())
+                .map(response -> {
+                    ApiDetailsResult result = response.getApiResult();
+                    if(result == null) {
+                        return restaurant;
+                    }
 
-                @Override
-                public void onFailure(@NonNull  Call<ApiResponse> call, @NonNull  Throwable t) {
-
-                }
-            });
+                    return updatedRestaurantInfo(restaurant, result, latLng);
+                });
     }
 
     private Completable restaurantDetailsCompletable(final Context context, Restaurant restaurant, final LatLng currentLocation) {
@@ -115,6 +163,7 @@ public class BaseViewModel extends ViewModel {
         // Create iterable observable
         Observable.fromIterable(restaurants)
             .flatMapCompletable(restaurant -> restaurantDetailsCompletable(context, restaurant, currentLocation))
+            .doOnError(throwable -> {})
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .doFinally(this::getTodayBooking)// Get Cloud FireStore booking places
@@ -179,22 +228,20 @@ public class BaseViewModel extends ViewModel {
         realm.beginTransaction();
         for (HashMap.Entry<String, Integer> entry: map.entrySet()){
             Restaurant restaurant = getRestaurantByPlaceId(entry.getKey());
-
             if(restaurant == null) continue;
-
             restaurant.setTotalWorkmates(entry.getValue());
         }
         realm.commitTransaction();
     }
 
     private void updateRestaurantsInfo() {
-        mRestaurantList.setValue(
+        mRestaurantsLiveData.setValue(
                 mRealm.where(Restaurant.class)
                         .sort("distance")
                         .findAll());
     }
 
-    private void applyRestaurantDetails(Restaurant restaurant, ApiDetailsResult detailsResult, int distance){
+    private void applyRestaurantDetailsWithRealm(Restaurant restaurant, ApiDetailsResult detailsResult, int distance){
         Realm realm = Realm.getDefaultInstance();
         ApiDetailsResult.OpeningHour openingHour = detailsResult.getOpeningHour();
 
@@ -222,6 +269,32 @@ public class BaseViewModel extends ViewModel {
         realm.commitTransaction();
     }
 
+    private Restaurant applyRestaurantDetails(Restaurant restaurant, ApiDetailsResult detailsResult, int distance){
+        ApiDetailsResult.OpeningHour openingHour = detailsResult.getOpeningHour();
+
+        if (openingHour != null) {
+            List<Period> periodList = openingHour.periods;
+
+            int dayIndex = Utils.getDayOfWeek();
+            int currentTime = Utils.getCurrentTime();
+            boolean isOpenNow = openingHour.isOpenNow;
+            boolean isClosingSoon = Utils.isClosingSoon(periodList, dayIndex, currentTime);
+
+            Period period = Utils.getCurrentPeriod(periodList, dayIndex, currentTime);
+            String status = Utils.restaurantStatus(isOpenNow, isClosingSoon, period);
+
+            restaurant.setOpenNow(isOpenNow);
+            restaurant.setClosingSoon(isClosingSoon);
+            restaurant.setStatus(status);
+        }
+
+        restaurant.setWebsite(detailsResult.getWebsite());
+        restaurant.setPhoneNumber(detailsResult.getPhoneNumber());
+        restaurant.setDistance(distance);
+
+        return restaurant;
+    }
+
     private Restaurant getRestaurantByPlaceId(String placeId) {
         return Realm.getDefaultInstance().where(Restaurant.class)
                 .equalTo(FIELD_PLACE_ID, placeId)
@@ -240,9 +313,22 @@ public class BaseViewModel extends ViewModel {
         );
 
         // Update restaurant info
-        applyRestaurantDetails(restaurant, detailsResult, distance);
+        applyRestaurantDetailsWithRealm(restaurant, detailsResult, distance);
 
         return restaurant;
+    }
+
+    private Restaurant updatedRestaurantInfo(Restaurant restaurant, ApiDetailsResult detailsResult, LatLng currentLocation) {
+        if(restaurant == null) return null;
+
+        // Calculate distance
+        int distance = Utils.distanceInMeters(
+                currentLocation.latitude, currentLocation.longitude,
+                restaurant.getLatitude(), restaurant.getLongitude()
+        );
+
+        // Update restaurant info
+        return applyRestaurantDetails(restaurant, detailsResult, distance);
     }
 
     //---- END
@@ -270,4 +356,7 @@ public class BaseViewModel extends ViewModel {
         mLocationPermission.setValue(state);
     }
 
+    public LiveData<List<Restaurant>> getRestaurantsLiveData() {
+        return mRestaurantsLiveData;
+    }
 }
