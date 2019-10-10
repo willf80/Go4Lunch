@@ -14,7 +14,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.apiman.go4lunch.R;
-import com.apiman.go4lunch.RestaurantDetailsActivity;
 import com.apiman.go4lunch.models.Restaurant;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -35,8 +34,6 @@ import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 import java.util.Arrays;
 import java.util.List;
 
-import static com.apiman.go4lunch.services.FireStoreUtils.FIELD_PLACE_ID;
-
 public class MapsFragment extends BaseFragment implements OnMapReadyCallback {
     private static final int AUTOCOMPLETE_REQUEST_CODE = 1;
     private static final float DEFAULT_ZOOM = 15.0f;
@@ -53,7 +50,7 @@ public class MapsFragment extends BaseFragment implements OnMapReadyCallback {
             Place.Field.TYPES
         );
 
-    private String mPlaceIdSelected;
+    private Restaurant mRestaurantSelected;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -109,15 +106,15 @@ public class MapsFragment extends BaseFragment implements OnMapReadyCallback {
 
     private void onMarkerClicked() {
         mMap.setOnMarkerClickListener(marker -> {
-            mPlaceIdSelected = (String) marker.getTag();
+            mRestaurantSelected = (Restaurant) marker.getTag();
             return false;
         });
     }
 
     private void onInfoWindowClicked() {
         mMap.setOnInfoWindowClickListener(marker -> {
-            if(mPlaceIdSelected == null) return;
-            showRestaurantDetails(mPlaceIdSelected);
+            if(mRestaurantSelected == null) return;
+            showRestaurantDetails(mRestaurantSelected);
         });
     }
 
@@ -147,7 +144,7 @@ public class MapsFragment extends BaseFragment implements OnMapReadyCallback {
             }
 
             Marker marker = mMap.addMarker(markerOptions);
-            marker.setTag(restaurant.getPlaceId());
+            marker.setTag(restaurant);
         }
     }
 
@@ -242,9 +239,8 @@ public class MapsFragment extends BaseFragment implements OnMapReadyCallback {
     }
 
 
-    private void showRestaurantDetails(String placeId) {
-        Intent intent = new Intent(getContext(), RestaurantDetailsActivity.class);
-        intent.putExtra(FIELD_PLACE_ID, placeId);
-        startActivity(intent);
+    @Override
+    void refreshData() {
+        mViewModel.refreshData(getContext());
     }
 }
