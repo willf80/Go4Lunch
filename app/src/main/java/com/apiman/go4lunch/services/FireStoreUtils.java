@@ -11,13 +11,16 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.Date;
+import java.util.concurrent.ExecutionException;
 
 public class FireStoreUtils {
     private static final String COL_PATH_WORKMATES = "workmates";
@@ -25,7 +28,7 @@ public class FireStoreUtils {
     private static final String COL_PATH_BOOKS = "books";
 
 //    public static final String FIELD_RESTAU_NAME = "name";
-//    public static final String FIELD_RESTAU_ADDRESS = "address";
+    public static final String FIELD_PHOTO = "photo";
     public static final String FIELD_PLACE_ID = "placeId";
     public static final String FIELD_USER = "user";
 
@@ -84,5 +87,9 @@ public class FireStoreUtils {
     public static @NonNull Task<DocumentSnapshot> getWorkmateBookOfDay(String workmateId) {
         return getTodayBookingCollection().document(workmateId)
                 .get();
+    }
+
+    public static QuerySnapshot getTodayBookingAwait() throws ExecutionException, InterruptedException {
+        return Tasks.await(getTodayBookingCollection().get());
     }
 }

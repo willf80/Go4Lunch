@@ -14,23 +14,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import io.reactivex.Observable;
-import retrofit2.Call;
+import io.reactivex.Flowable;
 
 public class RestaurantStreams {
 
-    public static Call<ApiResponse> getNearbyRestaurants(Context context, LatLng latLng) {
-        Map<String, String> parameters = ApiClientConfig.getNearbyDefaultParameters(context);
-        parameters.put("location", String.format(Locale.getDefault(),
-                "%s,%s", latLng.latitude, latLng.longitude));
-
-        return ApiClientConfig
-                .getHttpClient(context)
-                .create(RestaurantService.class)
-                .getNearbyRestaurants(parameters);
-    }
-
-    public static Observable<ApiResponse> getNearbyRestaurantsObservable(Context context, LatLng latLng) {
+    public static Flowable<ApiResponse> getNearbyRestaurantsObservable(Context context, LatLng latLng) {
         Map<String, String> parameters = ApiClientConfig.getNearbyDefaultParameters(context);
         parameters.put("location", String.format(Locale.getDefault(),
                 "%s,%s", latLng.latitude, latLng.longitude));
@@ -42,17 +30,17 @@ public class RestaurantStreams {
     }
 
 
-    public static Observable<ApiDetailsResponse> getRestaurantDetailsObservable(Context context, String placeId) {
-        return getRestaurantDetailsObservable(context, placeId,
+    public static Flowable<ApiDetailsResponse> getRestaurantDetailsFlowable(Context context, String placeId) {
+        return getRestaurantDetailsFlowable(context, placeId,
                 "name,vicinity,opening_hours,international_phone_number,place_id,website");
     }
 
-    public static Observable<ApiDetailsResponse> getRestaurantBasicDetailsObservable(Context context, String placeId) {
-        return getRestaurantDetailsObservable(context, placeId,
+    private static Flowable<ApiDetailsResponse> getRestaurantBasicDetailsFlowable(Context context, String placeId) {
+        return getRestaurantDetailsFlowable(context, placeId,
                 "name,vicinity,international_phone_number,place_id,website");
     }
 
-    private static Observable<ApiDetailsResponse> getRestaurantDetailsObservable(Context context, String placeId, String fields) {
+    private static Flowable<ApiDetailsResponse> getRestaurantDetailsFlowable(Context context, String placeId, String fields) {
         Map<String, String> parameters = ApiClientConfig.getDefaultParameters(context);
         parameters.put("place_id", placeId);
         parameters.put("fields", fields);
@@ -63,13 +51,13 @@ public class RestaurantStreams {
                 .getRestaurantDetailsObservable(parameters);
     }
 
-    public static Observable<Restaurant> getRestaurantDetailsExtractedObservable(Context context, String placeId) {
+    public static Flowable<Restaurant> getRestaurantDetailsExtractedFlowable(Context context, String placeId) {
         return RestaurantStreams
-                .getRestaurantBasicDetailsObservable(context, placeId)
-                .map(response -> fetchRestaurant(response.getApiResult(), placeId));
+                .getRestaurantBasicDetailsFlowable(context, placeId)
+                .map(response -> fetchRestaurantInfo(response.getApiResult(), placeId));
     }
 
-    private static Restaurant fetchRestaurant(ApiDetailsResult detailsResult, String placeId) {
+    private static Restaurant fetchRestaurantInfo(ApiDetailsResult detailsResult, String placeId) {
         Restaurant restaurant = new Restaurant();
 
         String vicinity = detailsResult.getVicinity();

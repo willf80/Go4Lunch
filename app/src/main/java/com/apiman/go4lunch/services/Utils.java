@@ -11,7 +11,7 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
-import io.reactivex.Flowable;
+import io.reactivex.Observable;
 
 public class Utils {
     private static final int earthRadius = 6_371;
@@ -143,28 +143,26 @@ public class Utils {
         return copyList;
     }
 
-    private static Iterable<Period> getPeriodOfDayIterableList(List<Period> periods, int dayIndex){
+    private static Observable<Period> getPeriodOfDayIterableListObservable(List<Period> periods, int dayIndex){
         List<Period> copyList = copyPeriodList(periods);
-        return Flowable
+        return Observable
                 .fromIterable(copyList)
                 .filter(period -> isSamePeriod(period, dayIndex))
-                .map(period -> transformPeriod(period, dayIndex))
-                .blockingIterable();
+                .map(period -> transformPeriod(period, dayIndex));
     }
 
     public static Period getCurrentPeriod(List<Period> periods, int dayIndex, int currentHour) {
-        return Flowable
-                .fromIterable(getPeriodOfDayIterableList(periods, dayIndex))
+
+        return getPeriodOfDayIterableListObservable(periods, dayIndex)
                 .filter(period -> isValidInterval(period, dayIndex, currentHour))
                 .blockingLast(null);
     }
 
     public static boolean isClosingSoon(List<Period> periods, int dayIndex, int currentHour) {
-        return Flowable
-                .fromIterable(getPeriodOfDayIterableList(periods, dayIndex))
+        return getPeriodOfDayIterableListObservable(periods, dayIndex)
                 .filter(period -> isValidInterval(period, dayIndex, currentHour))
                 .map(period -> isTimeGreaterThanClosingTime(period, currentHour))
-                .blockingFirst(false);
+                .blockingLast(false);
     }
 
     public static String restaurantStatus(boolean isOpenNow, boolean isClosingSoon, @Nullable Period period){

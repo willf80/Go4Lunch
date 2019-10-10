@@ -32,7 +32,6 @@ import butterknife.OnClick;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
-import io.realm.Realm;
 
 public class RestaurantDetailsActivity extends BaseActivity {
 
@@ -66,8 +65,9 @@ public class RestaurantDetailsActivity extends BaseActivity {
     WorkmateJoiningAdapter mWorkmateJoiningAdapter;
     List<Workmate> mWorkmateList = new ArrayList<>();
 
-    Realm mRealm;
+//    Realm mRealm;
     String mPlaceId;
+    String mPhotoReference;
     Restaurant mRestaurant;
     Disposable disposable;
 
@@ -79,11 +79,12 @@ public class RestaurantDetailsActivity extends BaseActivity {
         setSupportActionBar(toolbar);
         displayHomeAsUp();
 
-        mRealm = Realm.getDefaultInstance();
+//        mRealm = Realm.getDefaultInstance();
 
         mPlaceId = getIntent().getStringExtra(FireStoreUtils.FIELD_PLACE_ID);
+        mPhotoReference = getIntent().getStringExtra(FireStoreUtils.FIELD_PHOTO);
 
-        fetchRestaurant();
+        loadOnlineRestaurantDetails();
 
         mDetailsViewModel = ViewModelProviders
                 .of(this)
@@ -94,6 +95,7 @@ public class RestaurantDetailsActivity extends BaseActivity {
         listeners();
 
         mDetailsViewModel.getWorkmatesOfRestaurant(mPlaceId);
+        loadCoverPhoto();
     }
 
     private void listeners() {
@@ -118,22 +120,9 @@ public class RestaurantDetailsActivity extends BaseActivity {
                 .observe(this, bookings -> mWorkmateJoiningAdapter.setWorkmates(bookings));
     }
 
-    private void fetchRestaurant() {
-        mRestaurant = mRealm.where(Restaurant.class)
-                .equalTo(FireStoreUtils.FIELD_PLACE_ID, mPlaceId)
-                .findFirst();
-
-        if(mRestaurant != null) {
-            applyInfo();
-            return;
-        }
-
-        loadOnlineRestaurantDetails();
-    }
-
     private void loadOnlineRestaurantDetails() {
         disposable = RestaurantStreams
-                .getRestaurantDetailsExtractedObservable(this, mPlaceId)
+                .getRestaurantDetailsExtractedFlowable(this, mPlaceId)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(restaurant -> {
@@ -162,13 +151,11 @@ public class RestaurantDetailsActivity extends BaseActivity {
         }else{
             callBtn.setVisibility(View.VISIBLE);
         }
-
-        loadCoverPhoto();
     }
 
     private void loadCoverPhoto() {
         Picasso.get()
-                .load(RestaurantStreams.getMediumPhotoUrl(this, mRestaurant.getPhotoReference()))
+                .load(RestaurantStreams.getMediumPhotoUrl(this, mPhotoReference))
                 .centerCrop()
                 .resize(400, 400)
                 .into(coverPhoto);
