@@ -20,7 +20,7 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
-import com.apiman.go4lunch.models.Booking;
+import com.apiman.go4lunch.fragments.ProgressDialogFragment;
 import com.apiman.go4lunch.services.FireStoreUtils;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.tasks.Tasks;
@@ -38,6 +38,8 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import io.realm.Realm;
+
+import static com.apiman.go4lunch.services.FireStoreUtils.FIELD_PHOTO;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     @BindView(R.id.toolbar)
@@ -188,21 +190,33 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private void fetchSelectedRestaurant() {
         FirebaseUser user = FireStoreUtils.getCurrentFirebaseUser();
 
+        ProgressDialogFragment dialogFragment = ProgressDialogFragment.newInstance();
+        dialogFragment.show(getSupportFragmentManager());
+
         mDisposable = Observable.just(user.getUid())
                 .map(uuid -> Tasks.await(FireStoreUtils.getWorkmateBookOfDay(uuid)))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(documentSnapshot -> {
+                    dialogFragment.dismiss();
                     String placeId = documentSnapshot.get(FireStoreUtils.FIELD_PLACE_ID, String.class);
                     if(placeId != null) {
                         showRestaurantDetails(placeId);
+                        return;
                     }
-                });
+
+                    showNoBookingFound();
+                }, throwable -> dialogFragment.dismiss());
+    }
+
+    private void showNoBookingFound() {
+        Toast.makeText(this, "No booking found !", Toast.LENGTH_LONG).show();
     }
 
     private void showRestaurantDetails(String placeId){
         Intent intent = new Intent(this, RestaurantDetailsActivity.class);
         intent.putExtra(FireStoreUtils.FIELD_PLACE_ID, placeId);
+//        intent.putExtra(FIELD_PHOTO, restaurant.getPhotoReference());
         startActivity(intent);
     }
 
