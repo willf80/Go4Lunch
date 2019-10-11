@@ -193,9 +193,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(documentSnapshot -> {
-                    Booking booking = documentSnapshot.toObject(Booking.class);
-                    if(booking != null) {
-                        showRestaurantDetails(booking.placeId);
+                    String placeId = documentSnapshot.get(FireStoreUtils.FIELD_PLACE_ID, String.class);
+                    if(placeId != null) {
+                        showRestaurantDetails(placeId);
                     }
                 });
     }

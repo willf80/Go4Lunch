@@ -21,6 +21,7 @@ import com.apiman.go4lunch.models.Workmate;
 import com.apiman.go4lunch.services.FireStoreUtils;
 import com.apiman.go4lunch.services.RestaurantStreams;
 import com.apiman.go4lunch.viewmodels.RestaurantDetailsViewModel;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -35,7 +36,7 @@ import io.reactivex.schedulers.Schedulers;
 
 public class RestaurantDetailsActivity extends BaseActivity {
 
-    public static final int BOOKED_SUCCESSFULLY_RESULT_CODE = 8001;
+    public static final int BOOKED_RESULT_CODE = 8001;
 
     @BindView(R.id.recyclerView)
     RecyclerView mRecyclerView;
@@ -58,6 +59,9 @@ public class RestaurantDetailsActivity extends BaseActivity {
     @BindView(R.id.websiteBtn)
     Button websiteBtn;
 
+    @BindView(R.id.markAsSelectedBtn)
+    FloatingActionButton markAsSelectedBtn;
+
     @BindView(R.id.coverPhoto)
     ImageView coverPhoto;
 
@@ -65,11 +69,12 @@ public class RestaurantDetailsActivity extends BaseActivity {
     WorkmateJoiningAdapter mWorkmateJoiningAdapter;
     List<Workmate> mWorkmateList = new ArrayList<>();
 
-//    Realm mRealm;
     String mPlaceId;
     String mPhotoReference;
     Restaurant mRestaurant;
     Disposable disposable;
+
+    boolean isMyBooking = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,23 +84,25 @@ public class RestaurantDetailsActivity extends BaseActivity {
         setSupportActionBar(toolbar);
         displayHomeAsUp();
 
-//        mRealm = Realm.getDefaultInstance();
-
         mPlaceId = getIntent().getStringExtra(FireStoreUtils.FIELD_PLACE_ID);
         mPhotoReference = getIntent().getStringExtra(FireStoreUtils.FIELD_PHOTO);
 
-        loadOnlineRestaurantDetails();
-
-        mDetailsViewModel = ViewModelProviders
-                .of(this)
-                .get(RestaurantDetailsViewModel.class);
+        mDetailsViewModel = ViewModelProviders.of(this).get(RestaurantDetailsViewModel.class);
 
         setupRecyclerView();
-
+        loadOnlineRestaurantDetails();
         listeners();
 
         mDetailsViewModel.getWorkmatesOfRestaurant(mPlaceId);
+        mDetailsViewModel.checkIfRestaurantIsBookedByCurrentUser(mPlaceId);
+
         loadCoverPhoto();
+    }
+
+    private void setupRecyclerView(){
+        mWorkmateJoiningAdapter = new WorkmateJoiningAdapter(mWorkmateList);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        mRecyclerView.setAdapter(mWorkmateJoiningAdapter);
     }
 
     private void listeners() {
@@ -103,7 +110,8 @@ public class RestaurantDetailsActivity extends BaseActivity {
             .updatedListener()
             .observe(this, s -> {
                     mDetailsViewModel.getWorkmatesOfRestaurant(mPlaceId);
-                    setResult(BOOKED_SUCCESSFULLY_RESULT_CODE);
+                    mDetailsViewModel.checkIfRestaurantIsBookedByCurrentUser(mPlaceId);
+                    setResult(BOOKED_RESULT_CODE);
 
                     Toast.makeText(RestaurantDetailsActivity.this, "Restaurant booked successfully !", Toast.LENGTH_SHORT).show();
                 }
@@ -118,6 +126,20 @@ public class RestaurantDetailsActivity extends BaseActivity {
         mDetailsViewModel
                 .getPlaceWorkmatesLiveData()
                 .observe(this, bookings -> mWorkmateJoiningAdapter.setWorkmates(bookings));
+
+        mDetailsViewModel.getMyBookedRestaurantLiveData()
+                .observe(this, this::showBookedButton);
+    }
+
+    private void showBookedButton(boolean isMyBooking) {
+        this.isMyBooking = isMyBooking;
+        markAsSelectedBtn.show();
+
+        if(isMyBooking) {
+            markAsSelectedBtn.setImageResource(R.drawable.ic_cancel_black_24dp);
+        }else {
+            markAsSelectedBtn.setImageResource(R.drawable.ic_check_black_24dp);
+        }
     }
 
     private void loadOnlineRestaurantDetails() {
@@ -161,11 +183,6 @@ public class RestaurantDetailsActivity extends BaseActivity {
                 .into(coverPhoto);
     }
 
-    private void setupRecyclerView(){
-        mWorkmateJoiningAdapter = new WorkmateJoiningAdapter(mWorkmateList);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        mRecyclerView.setAdapter(mWorkmateJoiningAdapter);
-    }
 
     @OnClick(R.id.callBtn)
     void call() {
@@ -179,8 +196,7 @@ public class RestaurantDetailsActivity extends BaseActivity {
         startActivity(intent);
     }
 
-    @OnClick(R.id.markAsSelectedBtn)
-    void confirmSelection() {
+    void confirmBooking() {
         new AlertDialog.Builder(this)
                 .setTitle("Confirmation")
                 .setMessage("Do you want to book in this restaurant?") //Voulez-vous réserver dans ce restaurant?
@@ -189,6 +205,30 @@ public class RestaurantDetailsActivity extends BaseActivity {
                         (dialog, which) -> mDetailsViewModel.markRestaurantAsSelected(mRestaurant))
                 .create()
                 .show();
+    }
+
+    void confirmCancelBooking() {
+        new AlertDialog.Builder(this)
+                .setTitle("Confirmation")
+                .setMessage("Do you want to remove your booking ?")
+                .setNegativeButton("No", null)
+                .setPositiveButton("Yes, remove it",
+                        (dialog, which) -> {
+                            mDetailsViewModel.removeBooking(mRestaurant.getPlaceId());
+                            setResult(BOOKED_RESULT_CODE);
+                        })
+                .create()
+                .show();
+    }
+
+    @OnClick(R.id.markAsSelectedBtn)
+    void doBooking() {
+        if(isMyBooking) {
+            confirmCancelBooking();
+            return;
+        }
+
+        confirmBooking();
     }
 
     @Override

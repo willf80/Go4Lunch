@@ -20,7 +20,7 @@ public class Restaurant extends RealmObject {
     private double longitude;
     private double rating;
     private double userRatingsTotal;
-    private boolean isBook;
+    private boolean isBooked;
     private boolean isClosingSoon;
     private boolean openNow;
     private int distance;
@@ -85,12 +85,12 @@ public class Restaurant extends RealmObject {
         this.userRatingsTotal = userRatingsTotal;
     }
 
-    public boolean isBook() {
-        return isBook;
+    public boolean isBooked() {
+        return isBooked;
     }
 
-    public void setBook(boolean book) {
-        isBook = book;
+    public void setBooked(boolean booked) {
+        isBooked = booked;
     }
 
     public double getLatitude() {

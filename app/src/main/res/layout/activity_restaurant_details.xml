@@ -29,7 +29,7 @@
                 android:id="@+id/coverPhoto"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:src="@drawable/plat"
+                app:srcCompat="@drawable/plat"
                 android:scaleType="centerCrop"
                 app:layout_collapseMode="parallax"
                 tools:ignore="ContentDescription" />
@@ -44,16 +44,17 @@
         </com.google.android.material.appbar.CollapsingToolbarLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
+    <include layout="@layout/content_restaurant_details" />
+
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/markAsSelectedBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/fab_margin"
-        app:backgroundTint="@color/colorGrey300"
+        app:backgroundTint="@color/colorGrey100"
         app:layout_anchor="@id/app_bar"
         app:layout_anchorGravity="bottom|end"
-        app:srcCompat="@drawable/ic_cloud_done_black_24dp" />
-
-    <include layout="@layout/content_restaurant_details" />
+        app:srcCompat="@drawable/ic_check_black_24dp"
+        android:visibility="gone"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

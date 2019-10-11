@@ -139,7 +139,7 @@ public class BaseViewModel extends ViewModel {
         }
 
         restaurantItem.setTotalWorkmates(documentBookedList.size());
-        restaurantItem.setBook(!documentBookedList.isEmpty());
+        restaurantItem.setBooked(!documentBookedList.isEmpty());
 
         return restaurantItem;
     }

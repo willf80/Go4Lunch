@@ -137,7 +137,7 @@ public class MapsFragment extends BaseFragment implements OnMapReadyCallback {
                     .title(restaurant.getName())
                     .position(new LatLng(restaurant.getLatitude(), restaurant.getLongitude()));
 
-            if(restaurant.isBook()) {
+            if(restaurant.isBooked()) {
                 markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
             }else{
                 markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));

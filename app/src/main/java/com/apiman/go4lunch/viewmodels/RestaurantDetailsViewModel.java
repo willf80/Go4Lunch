@@ -15,6 +15,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Objects;
 
 import static com.apiman.go4lunch.services.FireStoreUtils.FIELD_PLACE_ID;
 import static com.apiman.go4lunch.services.FireStoreUtils.FIELD_USER;
@@ -24,6 +25,7 @@ public class RestaurantDetailsViewModel extends ViewModel {
     private MutableLiveData<String> mSuccessLiveData;
     private MutableLiveData<String> mErrorDispatcherLiveData;
     private MutableLiveData<List<Workmate>> mPlaceWorkmatesLiveData;
+    private MutableLiveData<Boolean> mMyBookedRestaurantLiveData;
 
     private CollectionReference todayBookingsRef;
 
@@ -31,6 +33,7 @@ public class RestaurantDetailsViewModel extends ViewModel {
         mSuccessLiveData = new MutableLiveData<>();
         mErrorDispatcherLiveData = new MutableLiveData<>();
         mPlaceWorkmatesLiveData = new MutableLiveData<>();
+        mMyBookedRestaurantLiveData = new MutableLiveData<>();
 
         todayBookingsRef = FireStoreUtils.getTodayBookingCollection();
     }
@@ -47,6 +50,10 @@ public class RestaurantDetailsViewModel extends ViewModel {
         return mPlaceWorkmatesLiveData;
     }
 
+    public LiveData<Boolean> getMyBookedRestaurantLiveData() {
+        return mMyBookedRestaurantLiveData;
+    }
+
     public void markRestaurantAsSelected(Restaurant restaurant) {
         String userRef = FireStoreUtils.getCurrentFirebaseUser().getUid();
 
@@ -58,8 +65,10 @@ public class RestaurantDetailsViewModel extends ViewModel {
         booking.placeId = restaurant.getPlaceId();
         booking.user = FireStoreUtils.getCurrentWorkmateUser(FirebaseAuth.getInstance().getCurrentUser());
 
-        todayBookingsRef.document(userRef).set(booking)
-            .addOnSuccessListener(aVoid ->mSuccessLiveData.setValue(restaurant.getPlaceId()))
+        todayBookingsRef
+            .document(userRef)
+            .set(booking)
+            .addOnSuccessListener(aVoid -> mSuccessLiveData.setValue(restaurant.getPlaceId()))
             .addOnFailureListener(e -> mErrorDispatcherLiveData.setValue(e.getMessage()));
     }
 
@@ -81,5 +90,26 @@ public class RestaurantDetailsViewModel extends ViewModel {
                 //Error
                 mErrorDispatcherLiveData.setValue(e.getMessage());
             });
+    }
+
+    public void checkIfRestaurantIsBookedByCurrentUser(String currentPlaceId){
+        String userId = FireStoreUtils.getCurrentFirebaseUser().getUid();
+        FireStoreUtils
+                .getTodayBookingCollection()
+                .document(userId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    String placeId = documentSnapshot.get(FIELD_PLACE_ID, String.class);
+                    boolean result = (placeId != null && Objects.equals(placeId, currentPlaceId));
+                    mMyBookedRestaurantLiveData.setValue(result);
+                });
+    }
+
+    public void removeBooking(String placeId) {
+        FireStoreUtils.removeBooking()
+                .addOnSuccessListener(aVoid -> {
+                    checkIfRestaurantIsBookedByCurrentUser(placeId);
+                    getWorkmatesOfRestaurant(placeId);
+                });
     }
 }

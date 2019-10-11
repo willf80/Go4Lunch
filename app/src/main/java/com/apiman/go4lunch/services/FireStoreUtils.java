@@ -27,7 +27,7 @@ public class FireStoreUtils {
     private static final String COL_PATH_BOOKINGS = "bookings";
     private static final String COL_PATH_BOOKS = "books";
 
-//    public static final String FIELD_RESTAU_NAME = "name";
+    public static final String FIELD_IS_BOOKED = "isBooked";
     public static final String FIELD_PHOTO = "photo";
     public static final String FIELD_PLACE_ID = "placeId";
     public static final String FIELD_USER = "user";
@@ -91,5 +91,10 @@ public class FireStoreUtils {
 
     public static QuerySnapshot getTodayBookingAwait() throws ExecutionException, InterruptedException {
         return Tasks.await(getTodayBookingCollection().get());
+    }
+
+    public static Task<Void> removeBooking() {
+        String userId = getCurrentFirebaseUser().getUid();
+        return getTodayBookingCollection().document(userId).delete();
     }
 }

@@ -101,7 +101,7 @@ public abstract class BaseFragment extends Fragment {
         super.onActivityResult(requestCode, resultCode, data);
 
         if(requestCode == BOOKING_REQUEST_CODE &&
-                resultCode == RestaurantDetailsActivity.BOOKED_SUCCESSFULLY_RESULT_CODE) {
+                resultCode == RestaurantDetailsActivity.BOOKED_RESULT_CODE) {
             refreshData();
         }
     }
