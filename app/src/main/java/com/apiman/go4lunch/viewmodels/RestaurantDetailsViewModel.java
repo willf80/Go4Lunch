@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.apiman.go4lunch.models.Booking;
+import com.apiman.go4lunch.models.Rating;
 import com.apiman.go4lunch.models.Restaurant;
 import com.apiman.go4lunch.models.Workmate;
 import com.apiman.go4lunch.services.FireStoreUtils;
@@ -26,6 +27,7 @@ public class RestaurantDetailsViewModel extends ViewModel {
     private MutableLiveData<String> mErrorDispatcherLiveData;
     private MutableLiveData<List<Workmate>> mPlaceWorkmatesLiveData;
     private MutableLiveData<Boolean> mMyBookedRestaurantLiveData;
+    private MutableLiveData<Float> mRatingLiveData;
 
     private CollectionReference todayBookingsRef;
 
@@ -34,6 +36,7 @@ public class RestaurantDetailsViewModel extends ViewModel {
         mErrorDispatcherLiveData = new MutableLiveData<>();
         mPlaceWorkmatesLiveData = new MutableLiveData<>();
         mMyBookedRestaurantLiveData = new MutableLiveData<>();
+        mRatingLiveData = new MutableLiveData<>();
 
         todayBookingsRef = FireStoreUtils.getTodayBookingCollection();
     }
@@ -52,6 +55,10 @@ public class RestaurantDetailsViewModel extends ViewModel {
 
     public LiveData<Boolean> getMyBookedRestaurantLiveData() {
         return mMyBookedRestaurantLiveData;
+    }
+
+    public LiveData<Float> getRatingLiveData() {
+        return mRatingLiveData;
     }
 
     public void markRestaurantAsSelected(Restaurant restaurant) {
@@ -112,5 +119,18 @@ public class RestaurantDetailsViewModel extends ViewModel {
                     checkIfRestaurantIsBookedByCurrentUser(placeId);
                     getWorkmatesOfRestaurant(placeId);
                 });
+    }
+
+    public void saveRating(final Rating rating) {
+        FireStoreUtils.saveRating(rating)
+                .addOnSuccessListener(aVoid -> getRestaurantRating(rating.placeId))
+                .addOnFailureListener(e -> {});
+    }
+
+    public void getRestaurantRating(String placeId) {
+        FireStoreUtils.getRestaurantRatingScore(placeId)
+                .get()
+                .addOnSuccessListener(querySnapshot ->
+                        mRatingLiveData.setValue(FireStoreUtils.averageRating(querySnapshot)));
     }
 }

@@ -6,6 +6,7 @@ import android.net.Uri;
 import androidx.annotation.NonNull;
 
 import com.apiman.go4lunch.R;
+import com.apiman.go4lunch.models.Rating;
 import com.apiman.go4lunch.models.Workmate;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -20,12 +21,17 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
+
+import io.reactivex.Flowable;
 
 public class FireStoreUtils {
     private static final String COL_PATH_WORKMATES = "workmates";
     private static final String COL_PATH_BOOKINGS = "bookings";
     private static final String COL_PATH_BOOKS = "books";
+    private static final String COL_PATH_RATINGS = "ratings";
+    private static final String COL_PATH_RATING_USERS = "rating_users";
 
     public static final String FIELD_PHOTO = "photo";
     public static final String FIELD_PLACE_ID = "placeId";
@@ -38,6 +44,8 @@ public class FireStoreUtils {
         return bookingRef.document(today).collection(COL_PATH_BOOKS);
     }
 
+
+
     public static GoogleSignInClient getGoogleSignInClient(Context context) {
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(context.getString(R.string.default_web_client_id))
@@ -49,6 +57,16 @@ public class FireStoreUtils {
     public static CollectionReference getWorkmatesCollection() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         return db.collection(COL_PATH_WORKMATES);
+    }
+
+//    public static CollectionReference getRatingsCollection(){
+//        FirebaseFirestore db = FirebaseFirestore.getInstance();
+//        return db.collection(COL_PATH_RATINGS);
+//    }
+
+    public static CollectionReference getRestaurantRatingScore(String placeId){
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        return db.collection(COL_PATH_RATINGS).document(placeId).collection(COL_PATH_RATING_USERS);
     }
 
     public static FirebaseUser getCurrentFirebaseUser() {
@@ -95,5 +113,30 @@ public class FireStoreUtils {
     public static Task<Void> removeBooking() {
         String userId = getCurrentFirebaseUser().getUid();
         return getTodayBookingCollection().document(userId).delete();
+    }
+
+    public static Task<Void> saveRating(Rating rating) {
+        return getRestaurantRatingScore(rating.placeId)
+                .document(rating.userId)
+                .set(rating);
+    }
+
+    public static Float averageRating(QuerySnapshot querySnapshot) {
+        List<DocumentSnapshot> documentSnapshots = querySnapshot.getDocuments();
+        int size = documentSnapshots.size();
+        if(size == 0) {
+            size = 1;
+        }
+        final float total = size;
+
+        return Flowable.fromIterable(documentSnapshots)
+                .reduce(0f,(rate, documentSnapshot) -> {
+                    Rating rating = documentSnapshot.toObject(Rating.class);
+                    assert rating != null;
+                    rate += rating.stars;
+                    return rate;
+                })
+                .map(sum -> sum / total)
+                .blockingGet();
     }
 }

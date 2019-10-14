@@ -7,16 +7,10 @@ import java.util.List;
 public class ApiResult {
     private String id;
     private String name;
-    private String reference;
     private String vicinity;
 
     @SerializedName("place_id")
     private String placeId;
-
-    @SerializedName("user_ratings_total")
-    private double userRatingsTotal;
-
-    private double rating;
 
     private Geometry geometry;
 
@@ -38,14 +32,6 @@ public class ApiResult {
         this.name = name;
     }
 
-    public String getReference() {
-        return reference;
-    }
-
-    public void setReference(String reference) {
-        this.reference = reference;
-    }
-
     public String getPlaceId() {
         return placeId;
     }
@@ -54,20 +40,16 @@ public class ApiResult {
         this.placeId = placeId;
     }
 
-    public double getRating() {
-        return rating;
+    public String getVicinity() {
+        return vicinity;
     }
 
-    public void setRating(double rating) {
-        this.rating = rating;
+    public Geometry getGeometry() {
+        return geometry;
     }
 
-    public double getUserRatingsTotal() {
-        return userRatingsTotal;
-    }
-
-    public void setUserRatingsTotal(double userRatingsTotal) {
-        this.userRatingsTotal = userRatingsTotal;
+    public List<Photo> getPhotos() {
+        return photos;
     }
 
     class Geometry {
@@ -84,9 +66,6 @@ public class ApiResult {
         restaurant.setId(id);
         restaurant.setName(name);
         restaurant.setPlaceId(placeId);
-        restaurant.setRating(rating);
-        restaurant.setReference(reference);
-        restaurant.setUserRatingsTotal(userRatingsTotal);
 
         if(vicinity != null) {
             String  address = vicinity.split(",")[0];

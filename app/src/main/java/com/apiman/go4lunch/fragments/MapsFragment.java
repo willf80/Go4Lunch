@@ -59,6 +59,11 @@ public class MapsFragment extends BaseFragment implements OnMapReadyCallback {
         setHasOptionsMenu(true);
     }
 
+    @Override
+    void updateRating(String placeId, float rating) {
+
+    }
+
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
 

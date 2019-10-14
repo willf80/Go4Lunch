@@ -18,7 +18,7 @@ public class Restaurant extends RealmObject {
     private String photoReference;
     private double latitude;
     private double longitude;
-    private double rating;
+    private float rating;
     private double userRatingsTotal;
     private boolean isBooked;
     private boolean isClosingSoon;
@@ -69,11 +69,11 @@ public class Restaurant extends RealmObject {
         this.placeId = placeId;
     }
 
-    public double getRating() {
+    public float getRating() {
         return rating;
     }
 
-    public void setRating(double rating) {
+    public void setRating(Float rating) {
         this.rating = rating;
     }
 

@@ -14,6 +14,7 @@ import com.apiman.go4lunch.services.FireStoreUtils;
 import com.apiman.go4lunch.services.RestaurantStreams;
 import com.apiman.go4lunch.services.Utils;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
@@ -39,23 +40,17 @@ public class BaseViewModel extends ViewModel {
     // List of restaurants
     private MutableLiveData<List<Restaurant>> mRestaurantsLiveData;
 
-//    private Realm mRealm;
-//    private CollectionReference todayBooksRef;
     private LatLng lastLatLng;
     private List<Restaurant> mRestaurantList;
     private Disposable mDisposable;
 
     public BaseViewModel() {
-//        mRealm = Realm.getDefaultInstance();
-
         mLocationPermission = new MutableLiveData<>();
         mLocationPermission.setValue(false);
 
         mLastKnowLocation = new MutableLiveData<>();
         mRestaurantsLiveData = new MutableLiveData<>();
         mRestaurantList = new ArrayList<>();
-
-//        todayBooksRef = FireStoreUtils.getTodayBookingCollection();
     }
 
     //---- Start Restaurants
@@ -71,7 +66,6 @@ public class BaseViewModel extends ViewModel {
         mRestaurantsLiveData.setValue(new ArrayList<>());
         loadRestaurants(context, lastLatLng);
     }
-
 
     private int performDistance(LatLng currentPosition, LatLng restaurantPosition) {
         return Utils.distanceInMeters(
@@ -100,14 +94,20 @@ public class BaseViewModel extends ViewModel {
                 .subscribe(restaurants -> {
                     mRestaurantList = restaurants;
                     getTodayBooking(context);// Get Cloud FireStore booking places
-//                    mRestaurantsLiveData.setValue(restaurants);
                 });
     }
 
     private Flowable<Restaurant> updateRestaurantItemFlowable(Context context, Restaurant restaurant) {
         return RestaurantStreams
                 .getRestaurantDetailsFlowable(context, restaurant.getPlaceId())
-                .map(detailsResponse -> applyRestaurantDetails(restaurant, detailsResponse.getApiResult()));
+                .map(detailsResponse -> applyRestaurantDetails(restaurant, detailsResponse.getApiResult()))
+                .map(restaurantWithDetails -> {
+                    QuerySnapshot snapshot = Tasks.await(FireStoreUtils.getRestaurantRatingScore(restaurant.getPlaceId()).get());
+                    Float rating = FireStoreUtils.averageRating(snapshot);
+                    restaurantWithDetails.setRating(rating);
+
+                    return restaurantWithDetails;
+                });
     }
 
     private void getRestaurantsDetails(final Context context, List<Restaurant> restaurants) {
@@ -120,6 +120,31 @@ public class BaseViewModel extends ViewModel {
             .observeOn(AndroidSchedulers.mainThread())
             .doFinally(() -> mRestaurantsLiveData.setValue(mRestaurantList))
             .subscribe();
+    }
+
+    private Restaurant applyRestaurantDetails(Restaurant restaurant, ApiDetailsResult detailsResult){
+        ApiDetailsResult.OpeningHour openingHour = detailsResult.getOpeningHour();
+
+        if (openingHour != null) {
+            List<Period> periodList = openingHour.periods;
+
+            int dayIndex = Utils.getDayOfWeek();
+            int currentTime = Utils.getCurrentTime();
+            boolean isOpenNow = openingHour.isOpenNow;
+            boolean isClosingSoon = Utils.isClosingSoon(periodList, dayIndex, currentTime);
+
+            Period period = Utils.getCurrentPeriod(periodList, dayIndex, currentTime);
+            String status = Utils.restaurantStatus(isOpenNow, isClosingSoon, period);
+
+            restaurant.setOpenNow(isOpenNow);
+            restaurant.setClosingSoon(isClosingSoon);
+            restaurant.setStatus(status);
+        }
+
+        restaurant.setWebsite(detailsResult.getWebsite());
+        restaurant.setPhoneNumber(detailsResult.getPhoneNumber());
+
+        return restaurant;
     }
 
     private Restaurant updateRestaurantBookedItem(List<Restaurant> restaurants, List<DocumentSnapshot> documentBookedList) {
@@ -168,31 +193,6 @@ public class BaseViewModel extends ViewModel {
                     getRestaurantsDetails(context, mRestaurantList);
                 })
                 .subscribe();
-    }
-
-    private Restaurant applyRestaurantDetails(Restaurant restaurant, ApiDetailsResult detailsResult){
-        ApiDetailsResult.OpeningHour openingHour = detailsResult.getOpeningHour();
-
-        if (openingHour != null) {
-            List<Period> periodList = openingHour.periods;
-
-            int dayIndex = Utils.getDayOfWeek();
-            int currentTime = Utils.getCurrentTime();
-            boolean isOpenNow = openingHour.isOpenNow;
-            boolean isClosingSoon = Utils.isClosingSoon(periodList, dayIndex, currentTime);
-
-            Period period = Utils.getCurrentPeriod(periodList, dayIndex, currentTime);
-            String status = Utils.restaurantStatus(isOpenNow, isClosingSoon, period);
-
-            restaurant.setOpenNow(isOpenNow);
-            restaurant.setClosingSoon(isClosingSoon);
-            restaurant.setStatus(status);
-        }
-
-        restaurant.setWebsite(detailsResult.getWebsite());
-        restaurant.setPhoneNumber(detailsResult.getPhoneNumber());
-
-        return restaurant;
     }
 
     //---- END

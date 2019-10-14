@@ -96,12 +96,24 @@ public abstract class BaseFragment extends Fragment {
         });
     }
 
+    abstract void updateRating(String placeId, float rating);
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
         if(requestCode == BOOKING_REQUEST_CODE &&
                 resultCode == RestaurantDetailsActivity.BOOKED_RESULT_CODE) {
+
+            if(data != null) {
+                float rating = data.getFloatExtra(RestaurantDetailsActivity.EXTRA_DATA_RATING_KEY, -1);
+                String placeId = data.getStringExtra(RestaurantDetailsActivity.EXTRA_DATA_PLACE_KEY);
+                if(rating >= 0 && placeId != null){
+                    updateRating(placeId, rating);
+                    return;
+                }
+            }
+
             refreshData();
         }
     }

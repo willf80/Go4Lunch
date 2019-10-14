@@ -35,9 +35,10 @@
 
                     <TextView
                         android:id="@+id/nameTextView"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:text="Le Zinc"
+                        android:text="@string/restaurant_name"
+                        android:layout_weight="1"
                         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                         android:textColor="@android:color/white" />
 
@@ -48,8 +49,7 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
                         android:layout_marginStart="16dp"
-                        android:numStars="3"
-                        android:rating="1.5" />
+                        android:numStars="3" />
                 </LinearLayout>
 
                 <TextView
@@ -57,7 +57,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:textColor="@android:color/white"
-                    android:text="Ivorian restaurant - 12 rue du Faubourg Poissonnière" />
+                    android:text="@string/restaurant_address" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
@@ -79,8 +79,9 @@
                 android:paddingBottom="16dp"
                 android:textColor="@color/colorPrimary"
                 android:background="@android:color/transparent"
-                android:text="Call"
-                android:visibility="gone"/>
+                android:text="@string/call"
+                android:visibility="gone"
+                tools:ignore="ButtonStyle" />
 
             <Button
                 android:id="@+id/likeBtn"
@@ -94,7 +95,8 @@
                 android:paddingBottom="16dp"
                 android:textColor="@color/colorPrimary"
                 android:background="@android:color/transparent"
-                android:text="Like" />
+                android:text="@string/like"
+                tools:ignore="ButtonStyle" />
 
             <Button
                 android:id="@+id/websiteBtn"
@@ -108,8 +110,9 @@
                 android:paddingBottom="16dp"
                 android:textColor="@color/colorPrimary"
                 android:background="@android:color/transparent"
-                android:text="Website"
-                android:visibility="gone"/>
+                android:text="@string/website"
+                android:visibility="gone"
+                tools:ignore="ButtonStyle" />
         </LinearLayout>
 
         <View

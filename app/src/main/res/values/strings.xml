@@ -33,4 +33,14 @@
     <string name="p_type_restaurant">restaurant</string>
     <string name="p_type_distance">distance</string>
     <string name="loading_text">Loading, please wait…</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="warning_select_number_of_star">Please select the number of stars before validation</string>
+    <string name="restaurant_name">Le Zinc</string>
+    <string name="restaurant_address">12 rue du Faubourg Poissonnière</string>
+    <string name="call">Call</string>
+    <string name="like">Like</string>
+    <string name="website">Website</string>
+    <string name="restaurant_booked_success">Restaurant booked successfully !</string>
 </resources>

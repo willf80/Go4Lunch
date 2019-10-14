@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -16,6 +17,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.apiman.go4lunch.adapters.WorkmateJoiningAdapter;
+import com.apiman.go4lunch.fragments.RatingDialogFragment;
+import com.apiman.go4lunch.models.Rating;
 import com.apiman.go4lunch.models.Restaurant;
 import com.apiman.go4lunch.models.Workmate;
 import com.apiman.go4lunch.services.FireStoreUtils;
@@ -34,9 +37,11 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
-public class RestaurantDetailsActivity extends BaseActivity {
+public class RestaurantDetailsActivity extends BaseActivity implements RatingDialogFragment.OnRatingFragmentInteractionListener {
 
     public static final int BOOKED_RESULT_CODE = 8001;
+    public static final String EXTRA_DATA_RATING_KEY = "ratingAvg";
+    public static final String EXTRA_DATA_PLACE_KEY = "placeId";
 
     @BindView(R.id.recyclerView)
     RecyclerView mRecyclerView;
@@ -65,6 +70,9 @@ public class RestaurantDetailsActivity extends BaseActivity {
     @BindView(R.id.coverPhoto)
     ImageView coverPhoto;
 
+    @BindView(R.id.ratingBar)
+    RatingBar ratingBar;
+
     RestaurantDetailsViewModel mDetailsViewModel;
     WorkmateJoiningAdapter mWorkmateJoiningAdapter;
     List<Workmate> mWorkmateList = new ArrayList<>();
@@ -75,6 +83,7 @@ public class RestaurantDetailsActivity extends BaseActivity {
     Disposable disposable;
 
     boolean isMyBooking = false;
+    boolean isRated = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,6 +104,7 @@ public class RestaurantDetailsActivity extends BaseActivity {
 
         mDetailsViewModel.getWorkmatesOfRestaurant(mPlaceId);
         mDetailsViewModel.checkIfRestaurantIsBookedByCurrentUser(mPlaceId);
+        mDetailsViewModel.getRestaurantRating(mPlaceId);
 
         loadCoverPhoto();
     }
@@ -105,30 +115,63 @@ public class RestaurantDetailsActivity extends BaseActivity {
         mRecyclerView.setAdapter(mWorkmateJoiningAdapter);
     }
 
-    private void listeners() {
+    private void restaurantSuccessObserver() {
         mDetailsViewModel
-            .updatedListener()
-            .observe(this, s -> {
-                    mDetailsViewModel.getWorkmatesOfRestaurant(mPlaceId);
-                    mDetailsViewModel.checkIfRestaurantIsBookedByCurrentUser(mPlaceId);
-                    setResult(BOOKED_RESULT_CODE);
+                .updatedListener()
+                .observe(this, s -> {
+                            mDetailsViewModel.getWorkmatesOfRestaurant(mPlaceId);
+                            mDetailsViewModel.checkIfRestaurantIsBookedByCurrentUser(mPlaceId);
+                            setResult(BOOKED_RESULT_CODE);
 
-                    Toast.makeText(RestaurantDetailsActivity.this, "Restaurant booked successfully !", Toast.LENGTH_SHORT).show();
-                }
-            );
+                            Toast.makeText(
+                                    RestaurantDetailsActivity.this,
+                                    getString(R.string.restaurant_booked_success),
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                );
+    }
 
+    private void restaurantDetailsErrorObserver() {
         mDetailsViewModel
-            .errorDispatcherLister()
-            .observe(this, s ->
-                    Toast.makeText(RestaurantDetailsActivity.this, s, Toast.LENGTH_SHORT)
-                        .show());
+                .errorDispatcherLister()
+                .observe(this, s ->
+                        Toast.makeText(RestaurantDetailsActivity.this, s, Toast.LENGTH_SHORT)
+                                .show());
+    }
 
+    private void workmateJoiningObserver() {
         mDetailsViewModel
                 .getPlaceWorkmatesLiveData()
                 .observe(this, bookings -> mWorkmateJoiningAdapter.setWorkmates(bookings));
+    }
 
+    private void isBookedRestaurantObserver() {
         mDetailsViewModel.getMyBookedRestaurantLiveData()
                 .observe(this, this::showBookedButton);
+    }
+
+    private void restaurantRatingObserver() {
+        mDetailsViewModel.getRatingLiveData()
+                .observe(this, rating -> {
+                    ratingBar.setRating(rating);
+
+                    if(!isRated) return;
+                    Toast.makeText(this, "Rating saved successfully.", Toast.LENGTH_LONG).show();
+
+                    Intent data = new Intent();
+                    data.putExtra(EXTRA_DATA_RATING_KEY, rating);
+                    data.putExtra(EXTRA_DATA_PLACE_KEY, mPlaceId);
+                    // Update all restaurant info
+                    setResult(BOOKED_RESULT_CODE, data);
+                });
+    }
+
+    private void listeners() {
+        restaurantSuccessObserver();
+        restaurantDetailsErrorObserver();
+        workmateJoiningObserver();
+        isBookedRestaurantObserver();
+        restaurantRatingObserver();
     }
 
     private void showBookedButton(boolean isMyBooking) {
@@ -183,7 +226,6 @@ public class RestaurantDetailsActivity extends BaseActivity {
                 .into(coverPhoto);
     }
 
-
     @OnClick(R.id.callBtn)
     void call() {
         Intent intent = new Intent(Intent.ACTION_DIAL, Uri.fromParts("tel", mRestaurant.getPhoneNumber(), null));
@@ -194,6 +236,12 @@ public class RestaurantDetailsActivity extends BaseActivity {
     void showWebSite() {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(mRestaurant.getWebsite()));
         startActivity(intent);
+    }
+
+    @OnClick(R.id.likeBtn)
+    void showRatingDialog(){
+        RatingDialogFragment ratingDialogFragment = RatingDialogFragment.newInstance();
+        ratingDialogFragment.show(getSupportFragmentManager(),"RatingDialogFragment");
     }
 
     void confirmBooking() {
@@ -237,5 +285,20 @@ public class RestaurantDetailsActivity extends BaseActivity {
         if(disposable != null && !disposable.isDisposed()){
             disposable.dispose();
         }
+    }
+
+    @Override
+    public void onRatingFragmentInteraction(int stars, String comment) {
+        Rating rating = new Rating();
+        rating.stars = stars;
+        rating.comment = comment;
+        rating.placeId = mRestaurant.getPlaceId();
+        rating.userId = FireStoreUtils.getCurrentFirebaseUser().getUid();
+
+        //Save rating on firebase
+        //Likes/placeId/users/userId + Object(Rating)
+        mDetailsViewModel.saveRating(rating);
+
+        isRated = true;
     }
 }

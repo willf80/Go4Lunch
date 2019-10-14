@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.RatingBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -61,6 +62,7 @@ public class RestaurantListAdapter extends RecyclerView.Adapter<RestaurantListAd
         holder.addressTextView.setText(restaurant.getPlaceId());
         holder.distanceTextView.setText(restaurant.getDistanceWithSuffix());
         holder.addressTextView.setText(restaurant.getAddress());
+        holder.ratingBar.setRating(restaurant.getRating());
         holder.workmatesTextView.setText(
                 String.format(Locale.getDefault(), "(%d)", restaurant.getTotalWorkmates()));
 
@@ -112,6 +114,9 @@ public class RestaurantListAdapter extends RecyclerView.Adapter<RestaurantListAd
 
         @BindView(R.id.imageView)
         ImageView photoImageView;
+
+        @BindView(R.id.ratingBar)
+        RatingBar ratingBar;
 
         Context context;
 
