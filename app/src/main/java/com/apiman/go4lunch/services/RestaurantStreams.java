@@ -32,12 +32,12 @@ public class RestaurantStreams {
 
     public static Flowable<ApiDetailsResponse> getRestaurantDetailsFlowable(Context context, String placeId) {
         return getRestaurantDetailsFlowable(context, placeId,
-                "name,vicinity,opening_hours,international_phone_number,place_id,website");
+                "name,vicinity,photo,opening_hours,international_phone_number,place_id,website");
     }
 
     private static Flowable<ApiDetailsResponse> getRestaurantBasicDetailsFlowable(Context context, String placeId) {
         return getRestaurantDetailsFlowable(context, placeId,
-                "name,vicinity,international_phone_number,place_id,website");
+                "name,vicinity,photo,international_phone_number,place_id,website");
     }
 
     private static Flowable<ApiDetailsResponse> getRestaurantDetailsFlowable(Context context, String placeId, String fields) {

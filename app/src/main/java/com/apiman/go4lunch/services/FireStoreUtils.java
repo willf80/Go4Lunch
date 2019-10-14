@@ -27,7 +27,6 @@ public class FireStoreUtils {
     private static final String COL_PATH_BOOKINGS = "bookings";
     private static final String COL_PATH_BOOKS = "books";
 
-    public static final String FIELD_IS_BOOKED = "isBooked";
     public static final String FIELD_PHOTO = "photo";
     public static final String FIELD_PLACE_ID = "placeId";
     public static final String FIELD_USER = "user";

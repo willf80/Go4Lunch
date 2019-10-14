@@ -6,6 +6,7 @@ public class Booking {
     public String placeId;
     public String restaurantName;
     public String restaurantAddress;
+    public String restaurantPhoto;
     public Date timestamps;
     public Workmate user;
 }

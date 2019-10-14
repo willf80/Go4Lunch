@@ -62,8 +62,7 @@ public class WorkmatesFragment extends Fragment implements WorkmateBookingAdapte
 
         Intent intent = new Intent(getContext(), RestaurantDetailsActivity.class);
         intent.putExtra(FireStoreUtils.FIELD_PLACE_ID, workmateBooking.booking.placeId);
-//        intent.putExtra(FireStoreUtils.FIELD_RESTAU_NAME, workmateBooking.booking.restaurantName);
-//        intent.putExtra(FireStoreUtils.FIELD_RESTAU_ADDRESS, workmateBooking.booking.restaurantAddress);
+        intent.putExtra(FireStoreUtils.FIELD_PHOTO, workmateBooking.booking.restaurantPhoto);
         startActivity(intent);
     }
 }

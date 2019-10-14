@@ -63,6 +63,7 @@ public class RestaurantDetailsViewModel extends ViewModel {
         booking.restaurantName = restaurant.getName();
         booking.timestamps = Calendar.getInstance().getTime();
         booking.placeId = restaurant.getPlaceId();
+        booking.restaurantPhoto = restaurant.getPhotoReference();
         booking.user = FireStoreUtils.getCurrentWorkmateUser(FirebaseAuth.getInstance().getCurrentUser());
 
         todayBookingsRef
