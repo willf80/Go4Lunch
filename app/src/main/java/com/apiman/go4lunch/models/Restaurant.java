@@ -2,11 +2,7 @@ package com.apiman.go4lunch.models;
 
 import java.util.Locale;
 
-import io.realm.RealmObject;
-import io.realm.annotations.PrimaryKey;
-
-public class Restaurant extends RealmObject {
-    @PrimaryKey
+public class Restaurant {
     private String id;
     private String name;
     private String reference;

@@ -5,6 +5,7 @@
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
     <application
         android:allowBackup="true"
@@ -13,7 +14,6 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        android:name=".AppActivity"
         tools:ignore="GoogleAppIndexingWarning">
 
         <activity
@@ -63,11 +63,21 @@
             </intent-filter>
         </activity>
 
+        <!-- [START Google Maps Key] -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
-    </application>
+        <!-- [END Google Maps Key] -->
 
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+        <!-- [START Notification receiver] -->
+        <receiver android:name=".broadcast.AppNotificationReceiver" android:exported="false"/>
+        <receiver android:name=".broadcast.RebootReceiver" android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+            </intent-filter>
+        </receiver>
+        <!-- [END Notification receiver] -->
+    </application>
 
 </manifest>

@@ -23,6 +23,7 @@ import androidx.navigation.ui.NavigationUI;
 import com.apiman.go4lunch.fragments.ProgressDialogFragment;
 import com.apiman.go4lunch.models.Booking;
 import com.apiman.go4lunch.services.FireStoreUtils;
+import com.apiman.go4lunch.services.NotificationHelper;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.tasks.Tasks;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -38,7 +39,6 @@ import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
-import io.realm.Realm;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     @BindView(R.id.toolbar)
@@ -56,7 +56,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @BindView(R.id.search_view_container)
     CardView searchViewContainer;
 
-    Realm mRealm;
     Disposable mDisposable;
 
     @Override
@@ -66,11 +65,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         ButterKnife.bind(this);
         setSupportActionBar(mToolbar);
 
-        mRealm = Realm.getDefaultInstance();
-
-        // Delete all data
-        mRealm.executeTransaction(realm -> realm.deleteAll());
-
         configureDrawerLayout();
 
         configureNavigationView();
@@ -78,6 +72,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         configureBottomNavigationView();
 
         navigationViewHeader();
+
+        startNotification();
+    }
+
+    private void startNotification() {
+        NotificationHelper notificationHelper = new NotificationHelper(this);
+        notificationHelper.startAlarm();
     }
 
     private void navigationViewHeader(){
