@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.util.Log;
 
 import com.apiman.go4lunch.services.NotificationHelper;
+import com.apiman.go4lunch.services.SettingsHelper;
 
 public class RebootReceiver extends BroadcastReceiver {
 
@@ -13,11 +14,10 @@ public class RebootReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         Log.i("RebootReceiver", "Notifications alarm started");
 
-//        SearchArticleParameter searchArticleParameter = SearchArticleUtils.getParameterFromSharedPreferences(context);
-//        if(searchArticleParameter.isValidForNotification()) {
-        NotificationHelper notificationHelper = new NotificationHelper(context);
-        notificationHelper.startAlarm();
-//        }
+        if(SettingsHelper.isNotificationEnabled(context)) {
+            NotificationHelper notificationHelper = new NotificationHelper(context);
+            notificationHelper.startAlarm();
+        }
     }
 
 

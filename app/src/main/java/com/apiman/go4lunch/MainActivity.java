@@ -24,6 +24,7 @@ import com.apiman.go4lunch.fragments.ProgressDialogFragment;
 import com.apiman.go4lunch.models.Booking;
 import com.apiman.go4lunch.services.FireStoreUtils;
 import com.apiman.go4lunch.services.NotificationHelper;
+import com.apiman.go4lunch.services.SettingsHelper;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.tasks.Tasks;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -77,8 +78,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void startNotification() {
-        NotificationHelper notificationHelper = new NotificationHelper(this);
-        notificationHelper.startAlarm();
+        if(SettingsHelper.isNotificationEnabled(this) &&
+                !SettingsHelper.isAlarmStarted(this)) {
+            NotificationHelper notificationHelper = new NotificationHelper(this);
+            notificationHelper.startAlarm();
+        }
     }
 
     private void navigationViewHeader(){
@@ -147,11 +151,20 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 fetchSelectedRestaurant();
                 return true;
 
+            case R.id.menu_action_settings:
+                startSettingsActivity();
+                return true;
+
             case R.id.menu_action_logout:
                 confirmSignOut();
                 return true;
         }
         return false;
+    }
+
+    private void startSettingsActivity() {
+        Intent intent = new Intent(this, SettingsActivity.class);
+        startActivity(intent);
     }
 
     private void confirmSignOut() {

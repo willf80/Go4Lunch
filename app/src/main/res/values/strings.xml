@@ -3,6 +3,7 @@
     <string name="title_maps">Map view</string>
     <string name="title_list_view">List View</string>
     <string name="title_workmates">Workmates</string>
+    <string name="title_settings">Settings</string>
     <string name="title_workmates_available">Available workmates</string>
     <string name="search">Search</string>
 
@@ -44,4 +45,8 @@
     <string name="default_notification_channel_id" translatable="false">default_channel</string>
     <string name="default_notification_channel_name" translatable="true">default channel</string>
     <string name="notification_title">@string/app_name</string>
+    <string name="notification_enable_help_text">You received notification every day at 12PM if you booked some restaurant before</string>
+    <string name="notification_disable_help_text">"You will not received any notifications"</string>
+    <string name="notification_is_enable">Notification is enable</string>
+    <string name="notification_is_disable">Notification is disable</string>
 </resources>

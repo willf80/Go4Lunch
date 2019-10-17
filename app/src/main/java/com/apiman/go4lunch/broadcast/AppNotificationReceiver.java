@@ -16,7 +16,6 @@ import androidx.core.app.NotificationCompat;
 import com.apiman.go4lunch.MainActivity;
 import com.apiman.go4lunch.R;
 import com.apiman.go4lunch.models.Booking;
-import com.apiman.go4lunch.models.WorkmateBooking;
 import com.apiman.go4lunch.services.FireStoreUtils;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -97,7 +96,7 @@ public class AppNotificationReceiver extends BroadcastReceiver {
 
     private void buildAndShowMessages(Context context, NotificationData notificationData){
         StringBuilder messageBuilder = new StringBuilder();
-        messageBuilder.append("It time to eat !");
+        messageBuilder.append("It's time to go eat!");
         messageBuilder.append("\n");
         messageBuilder.append("Your restaurant ");
         messageBuilder.append("[");
@@ -108,7 +107,7 @@ public class AppNotificationReceiver extends BroadcastReceiver {
         messageBuilder.append("] wait you.");
 
         if(notificationData.listOfWorkmates != null && !notificationData.listOfWorkmates.isEmpty()) {
-            messageBuilder.append(" Your workmate [");
+            messageBuilder.append(" Your workmates [");
             messageBuilder.append(notificationData.listOfWorkmates);
             messageBuilder.append("] ");
             messageBuilder.append("will also be present");

@@ -27,8 +27,8 @@ public class NotificationHelper {
 
     private long getTriggersMillis() {
         Calendar calendar = Calendar.getInstance();
-//        calendar.set(Calendar.HOUR_OF_DAY, 12);
-//        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.HOUR_OF_DAY, 12);
+        calendar.set(Calendar.MINUTE, 0);
 
         return calendar.getTimeInMillis();
     }
@@ -38,12 +38,15 @@ public class NotificationHelper {
         alarmManager.setRepeating(
                 AlarmManager.RTC_WAKEUP,
                 getTriggersMillis(),
-                /*AlarmManager.INTERVAL_DAY/*/1000 * 30,
+                AlarmManager.INTERVAL_DAY/*/1000 * 30*/,
                 mAlarmPendingIntent);
+
+        SettingsHelper.saveAlarmStatus(context, true);
     }
 
     public void stopAlarm() {
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         alarmManager.cancel(mAlarmPendingIntent);
+        SettingsHelper.saveAlarmStatus(context, false);
     }
 }
