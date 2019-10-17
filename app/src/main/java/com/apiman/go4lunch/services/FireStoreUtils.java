@@ -139,4 +139,8 @@ public class FireStoreUtils {
                 .map(sum -> sum / total)
                 .blockingGet();
     }
+
+    public static Task<DocumentSnapshot> getCurrentUserRating(String placeId, String userId) {
+        return getRestaurantRatingScore(placeId).document(userId).get();
+    }
 }

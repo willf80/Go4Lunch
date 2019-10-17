@@ -16,17 +16,24 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.FragmentManager;
 
 import com.apiman.go4lunch.R;
 
 
 public class RatingDialogFragment extends DialogFragment {
+    private static final String EXTRA_COMMENT_KEY = "comment";
+    private static final String EXTRA_STARS_KEY = "stars";
 
     private OnRatingFragmentInteractionListener mListener;
+    private int stars;
+    private String comment;
 
-    public static RatingDialogFragment newInstance() {
+    public static RatingDialogFragment newInstance(String comment, int stars) {
         RatingDialogFragment fragment = new RatingDialogFragment();
         Bundle args = new Bundle();
+        args.putString(EXTRA_COMMENT_KEY, comment);
+        args.putInt(EXTRA_STARS_KEY, stars);
         fragment.setArguments(args);
         return fragment;
     }
@@ -34,6 +41,11 @@ public class RatingDialogFragment extends DialogFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if(getArguments() != null) {
+            stars = getArguments().getInt(EXTRA_STARS_KEY, 0);
+            comment = getArguments().getString(EXTRA_COMMENT_KEY, "");
+        }
     }
 
     @NonNull
@@ -62,6 +74,9 @@ public class RatingDialogFragment extends DialogFragment {
         Button okBtn = view.findViewById(R.id.okBtn);
         RatingBar ratingBar = view.findViewById(R.id.ratingBar);
         EditText commentEditText = view.findViewById(R.id.commentEditText);
+
+        commentEditText.setText(comment);
+        ratingBar.setRating(stars);
 
         cancelBtn.setOnClickListener(v -> dismiss());
         okBtn.setOnClickListener(v -> {
@@ -101,6 +116,10 @@ public class RatingDialogFragment extends DialogFragment {
     public void onDetach() {
         super.onDetach();
         mListener = null;
+    }
+
+    public void show(FragmentManager fragmentManager) {
+        show(fragmentManager, RatingDialogFragment.class.getSimpleName());
     }
 
     public interface OnRatingFragmentInteractionListener {

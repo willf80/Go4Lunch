@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.apiman.go4lunch.adapters.WorkmateJoiningAdapter;
+import com.apiman.go4lunch.fragments.ProgressDialogFragment;
 import com.apiman.go4lunch.fragments.RatingDialogFragment;
 import com.apiman.go4lunch.models.Rating;
 import com.apiman.go4lunch.models.Restaurant;
@@ -228,7 +229,8 @@ public class RestaurantDetailsActivity extends BaseActivity implements RatingDia
 
     @OnClick(R.id.callBtn)
     void call() {
-        Intent intent = new Intent(Intent.ACTION_DIAL, Uri.fromParts("tel", mRestaurant.getPhoneNumber(), null));
+        Intent intent = new Intent(Intent.ACTION_DIAL,
+                Uri.fromParts("tel", mRestaurant.getPhoneNumber(), null));
         startActivity(intent);
     }
 
@@ -240,8 +242,28 @@ public class RestaurantDetailsActivity extends BaseActivity implements RatingDia
 
     @OnClick(R.id.likeBtn)
     void showRatingDialog(){
-        RatingDialogFragment ratingDialogFragment = RatingDialogFragment.newInstance();
-        ratingDialogFragment.show(getSupportFragmentManager(),"RatingDialogFragment");
+
+        final ProgressDialogFragment dialogFragment = ProgressDialogFragment.newInstance();
+        dialogFragment.show(getSupportFragmentManager());
+
+        FireStoreUtils.getCurrentUserRating(mPlaceId,
+                FireStoreUtils.getCurrentFirebaseUser().getUid())
+                .addOnSuccessListener(documentSnapshot -> {
+                    Rating rating = documentSnapshot.toObject(Rating.class);
+
+                    String comment = "";
+                    int stars = 0;
+
+                    if(rating != null) {
+                        comment = rating.comment;
+                        stars = rating.stars;
+                    }
+
+                    RatingDialogFragment ratingDialogFragment =
+                            RatingDialogFragment.newInstance(comment, stars);
+                    ratingDialogFragment.show(getSupportFragmentManager());
+                })
+                .addOnCompleteListener(command -> dialogFragment.dismiss());
     }
 
     void confirmBooking() {
