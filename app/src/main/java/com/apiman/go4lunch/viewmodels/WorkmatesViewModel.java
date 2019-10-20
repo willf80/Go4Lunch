@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModel;
 import com.apiman.go4lunch.models.Booking;
 import com.apiman.go4lunch.models.Workmate;
 import com.apiman.go4lunch.models.WorkmateBooking;
-import com.apiman.go4lunch.services.FireStoreUtils;
+import com.apiman.go4lunch.helpers.FireStoreUtils;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;

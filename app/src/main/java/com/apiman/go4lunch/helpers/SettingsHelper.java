@@ -1,4 +1,4 @@
-package com.apiman.go4lunch.services;
+package com.apiman.go4lunch.helpers;
 
 import android.content.Context;
 import android.content.SharedPreferences;

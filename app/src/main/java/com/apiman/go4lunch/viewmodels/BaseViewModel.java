@@ -6,15 +6,21 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import com.apiman.go4lunch.helpers.FireStoreUtils;
+import com.apiman.go4lunch.helpers.Utils;
 import com.apiman.go4lunch.models.ApiDetailsResult;
 import com.apiman.go4lunch.models.ApiResponse;
 import com.apiman.go4lunch.models.Period;
 import com.apiman.go4lunch.models.Restaurant;
-import com.apiman.go4lunch.services.FireStoreUtils;
+import com.apiman.go4lunch.models.SearchMode;
 import com.apiman.go4lunch.services.RestaurantStreams;
-import com.apiman.go4lunch.services.Utils;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.Tasks;
+import com.google.android.libraries.places.api.model.AutocompletePrediction;
+import com.google.android.libraries.places.api.model.AutocompleteSessionToken;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
+import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
@@ -23,14 +29,14 @@ import java.util.List;
 import java.util.Objects;
 
 import io.reactivex.Flowable;
+import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
-import static com.apiman.go4lunch.services.FireStoreUtils.FIELD_PLACE_ID;
+import static com.apiman.go4lunch.helpers.FireStoreUtils.FIELD_PLACE_ID;
 
 public class BaseViewModel extends ViewModel {
-
     // Location permission state
     private MutableLiveData<Boolean> mLocationPermission;
 
@@ -42,6 +48,9 @@ public class BaseViewModel extends ViewModel {
 
     private LatLng lastLatLng;
     private List<Restaurant> mRestaurantList;
+    private List<Restaurant> mSearchRestaurantList;
+
+    private SearchMode searchMode = SearchMode.RESTAURANTS;
     private Disposable mDisposable;
 
     public BaseViewModel() {
@@ -195,6 +204,38 @@ public class BaseViewModel extends ViewModel {
                 .subscribe();
     }
 
+    private FindAutocompletePredictionsRequest createRequest(String query) {
+        AutocompleteSessionToken token = AutocompleteSessionToken.newInstance();
+        return FindAutocompletePredictionsRequest
+                .builder()
+                .setCountry("fr")
+                .setSessionToken(token)
+                .setQuery(query)
+                .build();
+    }
+
+    public void searchAutoComplete(PlacesClient placesClient, String query) {
+        if(searchMode == SearchMode.WORKMATES) {
+            return;
+        }
+
+        placesClient.findAutocompletePredictions(createRequest(query))
+                .addOnSuccessListener(response -> {
+                    mSearchRestaurantList = new ArrayList<>();
+                    for (AutocompletePrediction prediction : response.getAutocompletePredictions()) {
+                        List<Place.Type> placesType = prediction.getPlaceTypes();
+                        if(!placesType.contains(Place.Type.RESTAURANT)) continue;
+
+                        Restaurant restaurantFound = Observable.fromIterable(mRestaurantList)
+                                .filter(restaurant -> Objects.equals(restaurant.getPlaceId(), prediction.getPlaceId()))
+                                .blockingFirst(null);
+
+                        if(restaurantFound != null) mSearchRestaurantList.add(restaurantFound);
+                    }
+
+                    mRestaurantsLiveData.setValue(mSearchRestaurantList);
+                });
+    }
     //---- END
 
     public LiveData<LatLng> getLastKnowLocation() {
@@ -223,5 +264,13 @@ public class BaseViewModel extends ViewModel {
         if(mDisposable != null && !mDisposable.isDisposed()) {
             mDisposable.dispose();
         }
+    }
+
+    public void closeSearchMode() {
+        mRestaurantsLiveData.setValue(mRestaurantList);
+    }
+
+    public void setSearchMode(SearchMode searchMode) {
+        this.searchMode = searchMode;
     }
 }

@@ -2,7 +2,7 @@ package com.apiman.go4lunch;
 
 import com.apiman.go4lunch.models.DayTime;
 import com.apiman.go4lunch.models.Period;
-import com.apiman.go4lunch.services.Utils;
+import com.apiman.go4lunch.helpers.Utils;
 
 import org.junit.Test;
 

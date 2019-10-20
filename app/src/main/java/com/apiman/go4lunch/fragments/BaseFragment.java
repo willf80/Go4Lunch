@@ -5,11 +5,15 @@ import android.app.Activity;
 import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 
+import com.apiman.go4lunch.R;
 import com.apiman.go4lunch.RestaurantDetailsActivity;
 import com.apiman.go4lunch.models.Restaurant;
 import com.apiman.go4lunch.viewmodels.BaseViewModel;
@@ -25,8 +29,8 @@ import com.karumi.dexter.listener.single.PermissionListener;
 
 import java.util.Objects;
 
-import static com.apiman.go4lunch.services.FireStoreUtils.FIELD_PHOTO;
-import static com.apiman.go4lunch.services.FireStoreUtils.FIELD_PLACE_ID;
+import static com.apiman.go4lunch.helpers.FireStoreUtils.FIELD_PHOTO;
+import static com.apiman.go4lunch.helpers.FireStoreUtils.FIELD_PLACE_ID;
 
 public abstract class BaseFragment extends Fragment {
     private static final int BOOKING_REQUEST_CODE = 8000;
@@ -39,6 +43,7 @@ public abstract class BaseFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mActivity = getActivity();
+
         mViewModel = ViewModelProviders
                 .of(Objects.requireNonNull(getActivity()))
                 .get(BaseViewModel.class);
@@ -116,6 +121,11 @@ public abstract class BaseFragment extends Fragment {
 
             refreshData();
         }
+    }
+
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        inflater.inflate(R.menu.main_menu, menu);
     }
 
     void showRestaurantDetails(Restaurant restaurant) {

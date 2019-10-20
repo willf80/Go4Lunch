@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -26,7 +27,6 @@ import io.reactivex.schedulers.Schedulers;
 public class ListViewFragment extends BaseFragment implements RestaurantListAdapter.OnDispatchListener {
     private RestaurantListAdapter mRestaurantListAdapter;
     private List<Restaurant> mRestaurantList = new ArrayList<>();
-
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -56,11 +56,11 @@ public class ListViewFragment extends BaseFragment implements RestaurantListAdap
 
     private void observeRestaurant() {
         mViewModel
-                .getRestaurantsLiveData()
-                .observe(this, restaurants -> {
-                    mRestaurantList = restaurants;
-                    mRestaurantListAdapter.setRestaurants(mRestaurantList);
-                });
+            .getRestaurantsLiveData()
+            .observe(this, restaurants -> {
+                mRestaurantList = restaurants;
+                mRestaurantListAdapter.setRestaurants(mRestaurantList);
+            });
     }
 
     private void getRestaurants(Context context, LatLng latLng) {

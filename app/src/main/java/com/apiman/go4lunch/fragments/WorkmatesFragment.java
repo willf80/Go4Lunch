@@ -16,7 +16,7 @@ import com.apiman.go4lunch.R;
 import com.apiman.go4lunch.RestaurantDetailsActivity;
 import com.apiman.go4lunch.adapters.WorkmateBookingAdapter;
 import com.apiman.go4lunch.models.WorkmateBooking;
-import com.apiman.go4lunch.services.FireStoreUtils;
+import com.apiman.go4lunch.helpers.FireStoreUtils;
 import com.apiman.go4lunch.viewmodels.WorkmatesViewModel;
 
 import java.util.ArrayList;
@@ -52,8 +52,10 @@ public class WorkmatesFragment extends Fragment implements WorkmateBookingAdapte
     }
 
     private void workmatesListener() {
-        mWorkmatesViewModel.getWorkmatesLiveData().observe(this,
-                workmateList -> mWorkmateBookingAdapter.setWorkmateBookings(workmateList));
+        mWorkmatesViewModel
+                .getWorkmatesLiveData()
+                .observe(this,
+                    workmateList -> mWorkmateBookingAdapter.setWorkmateBookings(workmateList));
     }
 
     @Override

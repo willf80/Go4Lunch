@@ -22,7 +22,7 @@ import com.apiman.go4lunch.fragments.RatingDialogFragment;
 import com.apiman.go4lunch.models.Rating;
 import com.apiman.go4lunch.models.Restaurant;
 import com.apiman.go4lunch.models.Workmate;
-import com.apiman.go4lunch.services.FireStoreUtils;
+import com.apiman.go4lunch.helpers.FireStoreUtils;
 import com.apiman.go4lunch.services.RestaurantStreams;
 import com.apiman.go4lunch.viewmodels.RestaurantDetailsViewModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;

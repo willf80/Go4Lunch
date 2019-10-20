@@ -3,30 +3,40 @@ package com.apiman.go4lunch;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.cardview.widget.CardView;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.lifecycle.ViewModelProviders;
 import androidx.navigation.NavController;
+import androidx.navigation.NavDestination;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.apiman.go4lunch.fragments.ProgressDialogFragment;
+import com.apiman.go4lunch.helpers.FireStoreUtils;
+import com.apiman.go4lunch.helpers.NotificationHelper;
+import com.apiman.go4lunch.helpers.SettingsHelper;
 import com.apiman.go4lunch.models.Booking;
-import com.apiman.go4lunch.services.FireStoreUtils;
-import com.apiman.go4lunch.services.NotificationHelper;
-import com.apiman.go4lunch.services.SettingsHelper;
+import com.apiman.go4lunch.models.SearchMode;
+import com.apiman.go4lunch.viewmodels.BaseViewModel;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.tasks.Tasks;
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
@@ -51,13 +61,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @BindView(R.id.activity_main_navigation_view)
     NavigationView mNavigationView;
 
-//    @BindView(R.id.searchView)
-//    SearchView mSearchView;
+    @BindView(R.id.searchView)
+    SearchView mSearchView;
 
     @BindView(R.id.search_view_container)
     CardView searchViewContainer;
 
     Disposable mDisposable;
+    BaseViewModel mBaseViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +76,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
         setSupportActionBar(mToolbar);
+
+        mBaseViewModel = ViewModelProviders.of(this).get(BaseViewModel.class);
+
+        Places.initialize(this, getString(R.string.place_api_key));
+        PlacesClient placesClient = Places.createClient(this);
 
         configureDrawerLayout();
 
@@ -75,6 +91,33 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         navigationViewHeader();
 
         startNotification();
+
+        onQueryTextFocusListener();
+        onQueryTextListener(placesClient);
+    }
+
+    private void onQueryTextFocusListener() {
+        mSearchView.setOnQueryTextFocusChangeListener((v, hasFocus) -> {
+            if(!hasFocus) {
+                hideSearchView();
+            }
+            mBaseViewModel.closeSearchMode();
+        });
+    }
+
+    private void onQueryTextListener(final PlacesClient placesClient) {
+        mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                mBaseViewModel.searchAutoComplete(placesClient, newText);
+                return false;
+            }
+        });
     }
 
     private void startNotification() {
@@ -111,6 +154,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 R.id.navigation_maps, R.id.navigation_list_view, R.id.navigation_workmates)
                 .build();
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
+        navController.addOnDestinationChangedListener(mOnDestinationChangedListener);
 
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(navView, navController);
@@ -143,6 +187,27 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mNavigationView.setItemTextColor(colorStateList);
         mNavigationView.setItemIconTintList(colorStateList);
     }
+
+    private NavController.OnDestinationChangedListener
+        mOnDestinationChangedListener= new NavController.OnDestinationChangedListener() {
+        @Override
+        public void onDestinationChanged(@NonNull NavController controller,
+                                         @NonNull NavDestination destination,
+                                         @Nullable Bundle arguments) {
+            switch (destination.getId()){
+                case R.id.navigation_maps:
+                case R.id.navigation_list_view:
+                    mSearchView.setQueryHint(getString(R.string.search_restaurants));
+                    mBaseViewModel.setSearchMode(SearchMode.RESTAURANTS);
+                    break;
+
+                case R.id.navigation_workmates:
+                    mSearchView.setQueryHint(getString(R.string.search_workmates));
+                    mBaseViewModel.setSearchMode(SearchMode.WORKMATES);
+                    break;
+            }
+        }
+    };
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
@@ -185,12 +250,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         GoogleSignInClient googleSignInClient = FireStoreUtils.getGoogleSignInClient(this);
 
         googleSignInClient.signOut()
-                .addOnSuccessListener(aVoid -> showLoginActivity())
-                .addOnFailureListener(command ->
-                        Toast.makeText(
-                                MainActivity.this,
-                                getString(R.string.operation_failed),
-                                Toast.LENGTH_SHORT).show());
+            .addOnSuccessListener(aVoid -> showLoginActivity())
+            .addOnFailureListener(command -> Toast.makeText(MainActivity.this,
+                    getString(R.string.operation_failed), Toast.LENGTH_SHORT).show());
     }
 
     private void showLoginActivity() {
@@ -232,6 +294,32 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         intent.putExtra(FireStoreUtils.FIELD_PLACE_ID, placeId);
         intent.putExtra(FireStoreUtils.FIELD_PHOTO, restaurantPhoto);
         startActivity(intent);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if(item.getItemId() == R.id.app_bar_search){
+            showSearchView();
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void showSearchView(){
+        mToolbar.setVisibility(View.GONE);
+        searchViewContainer.setVisibility(View.VISIBLE);
+        mSearchView.setQuery("", false);
+        mSearchView.requestFocus();
+    }
+
+    private void hideSearchView(){
+        mToolbar.setVisibility(View.VISIBLE);
+        searchViewContainer.setVisibility(View.GONE);
     }
 
     @Override

@@ -5,8 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
-import com.apiman.go4lunch.services.NotificationHelper;
-import com.apiman.go4lunch.services.SettingsHelper;
+import com.apiman.go4lunch.helpers.NotificationHelper;
+import com.apiman.go4lunch.helpers.SettingsHelper;
 
 public class RebootReceiver extends BroadcastReceiver {
 

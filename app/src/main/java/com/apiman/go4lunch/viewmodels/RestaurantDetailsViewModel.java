@@ -8,7 +8,7 @@ import com.apiman.go4lunch.models.Booking;
 import com.apiman.go4lunch.models.Rating;
 import com.apiman.go4lunch.models.Restaurant;
 import com.apiman.go4lunch.models.Workmate;
-import com.apiman.go4lunch.services.FireStoreUtils;
+import com.apiman.go4lunch.helpers.FireStoreUtils;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -18,8 +18,8 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Objects;
 
-import static com.apiman.go4lunch.services.FireStoreUtils.FIELD_PLACE_ID;
-import static com.apiman.go4lunch.services.FireStoreUtils.FIELD_USER;
+import static com.apiman.go4lunch.helpers.FireStoreUtils.FIELD_PLACE_ID;
+import static com.apiman.go4lunch.helpers.FireStoreUtils.FIELD_USER;
 
 public class RestaurantDetailsViewModel extends ViewModel {
 

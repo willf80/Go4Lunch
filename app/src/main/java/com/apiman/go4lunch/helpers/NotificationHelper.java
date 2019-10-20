@@ -1,4 +1,4 @@
-package com.apiman.go4lunch.services;
+package com.apiman.go4lunch.helpers;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;

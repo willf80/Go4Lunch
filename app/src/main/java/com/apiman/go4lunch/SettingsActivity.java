@@ -4,8 +4,8 @@ import android.os.Bundle;
 import android.widget.Switch;
 import android.widget.TextView;
 
-import com.apiman.go4lunch.services.NotificationHelper;
-import com.apiman.go4lunch.services.SettingsHelper;
+import com.apiman.go4lunch.helpers.NotificationHelper;
+import com.apiman.go4lunch.helpers.SettingsHelper;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;

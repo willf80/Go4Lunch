@@ -16,7 +16,7 @@ import androidx.core.app.NotificationCompat;
 import com.apiman.go4lunch.MainActivity;
 import com.apiman.go4lunch.R;
 import com.apiman.go4lunch.models.Booking;
-import com.apiman.go4lunch.services.FireStoreUtils;
+import com.apiman.go4lunch.helpers.FireStoreUtils;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.QuerySnapshot;
 

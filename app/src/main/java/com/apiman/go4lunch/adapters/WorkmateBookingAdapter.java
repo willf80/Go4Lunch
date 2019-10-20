@@ -16,7 +16,7 @@ import com.apiman.go4lunch.R;
 import com.apiman.go4lunch.models.Booking;
 import com.apiman.go4lunch.models.Workmate;
 import com.apiman.go4lunch.models.WorkmateBooking;
-import com.apiman.go4lunch.services.Utils;
+import com.apiman.go4lunch.helpers.Utils;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
