@@ -24,8 +24,6 @@
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
-    <string name="facebook_app_id">413607625946696</string>
-    <string name="fb_login_protocol_scheme">fb413607625946696</string>
     <string name="auth_failed">Authentication failed</string>
     <string name="operation_failed">Operation failed, please retry later</string>
     <string name="api_base_url">https://maps.googleapis.com/</string>
@@ -49,4 +47,9 @@
     <string name="notification_disable_help_text">"You will not received any notifications"</string>
     <string name="notification_is_enable">Notification is enable</string>
     <string name="notification_is_disable">Notification is disable</string>
+    <string name="username">Email</string>
+    <string name="password">Password</string>
+    <string name="login">Login</string>
+    <string name="or">Or login with</string>
+    <string name="create_new_account">Create new account</string>
 </resources>

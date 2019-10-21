@@ -19,6 +19,8 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.twitter.sdk.android.core.TwitterAuthConfig;
+import com.twitter.sdk.android.core.TwitterConfig;
 
 import java.util.Date;
 import java.util.List;
@@ -44,8 +46,6 @@ public class FireStoreUtils {
         return bookingRef.document(today).collection(COL_PATH_BOOKS);
     }
 
-
-
     public static GoogleSignInClient getGoogleSignInClient(Context context) {
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(context.getString(R.string.default_web_client_id))
@@ -54,15 +54,18 @@ public class FireStoreUtils {
         return GoogleSignIn.getClient(context, gso);
     }
 
+    public static TwitterConfig getTwitterConfig(Context context) {
+        TwitterAuthConfig authConfig = new TwitterAuthConfig(
+                context.getString(R.string.twitter_consumer_key),
+                context.getString(R.string.twitter_consumer_secret));
+
+        return new TwitterConfig.Builder(context).twitterAuthConfig(authConfig).build();
+    }
+
     public static CollectionReference getWorkmatesCollection() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         return db.collection(COL_PATH_WORKMATES);
     }
-
-//    public static CollectionReference getRatingsCollection(){
-//        FirebaseFirestore db = FirebaseFirestore.getInstance();
-//        return db.collection(COL_PATH_RATINGS);
-//    }
 
     public static CollectionReference getRestaurantRatingScore(String placeId){
         FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -93,9 +96,14 @@ public class FireStoreUtils {
             url = uri.toString();
         }
 
+        String displayName = firebaseUser.getDisplayName();
+        if(displayName == null || displayName.isEmpty()) {
+            displayName = firebaseUser.getEmail();
+        }
+
         return new Workmate(
                 firebaseUser.getUid(),
-                firebaseUser.getDisplayName(),
+                displayName,
                 firebaseUser.getEmail(),
                 url,
                 new Date());

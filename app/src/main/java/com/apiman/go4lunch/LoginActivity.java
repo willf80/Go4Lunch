@@ -22,21 +22,40 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.auth.TwitterAuthProvider;
+import com.twitter.sdk.android.core.Callback;
+import com.twitter.sdk.android.core.Result;
+import com.twitter.sdk.android.core.Twitter;
+import com.twitter.sdk.android.core.TwitterException;
+import com.twitter.sdk.android.core.TwitterSession;
+import com.twitter.sdk.android.core.identity.TwitterLoginButton;
 
 import java.util.Arrays;
+import java.util.Objects;
 
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 public class LoginActivity extends AppCompatActivity {
     private static final int RC_SIGN_IN = 9001;
     private static final String TAG = "LoginActivity";
+
+    @BindView(R.id.userNameEditText)
+    TextInputEditText userNameEditText;
+
+    @BindView(R.id.passwordEditText)
+    TextInputEditText passwordEditText;
+
+    @BindView(R.id.twitterLoginButton)
+    TwitterLoginButton twitterLoginButton;
 
     // Firebase
     private FirebaseAuth mFirebaseAuth;
@@ -60,32 +79,49 @@ public class LoginActivity extends AppCompatActivity {
         mCallbackManager = CallbackManager.Factory.create();
         facebookCallbackRegister();
 
-        mFirebaseAuth = FirebaseAuth.getInstance();
+        // Twitter
+        Twitter.initialize(FireStoreUtils.getTwitterConfig(this));
+        twitterLoginButton.setCallback(mTwitterSessionCallback);
 
-//        signOut();
+        mFirebaseAuth = FirebaseAuth.getInstance();
+        if(mFirebaseAuth.getCurrentUser() != null) {
+            startConnectedActivity();
+        }
     }
+
+    private Callback<TwitterSession> mTwitterSessionCallback = new Callback<TwitterSession>() {
+        @Override
+        public void success(Result<TwitterSession> result) {
+            firebaseAuthWithTwitter(result.data);
+        }
+
+        @Override
+        public void failure(TwitterException exception) {
+
+        }
+    };
 
     private void facebookCallbackRegister() {
         LoginManager
-                .getInstance()
-                .registerCallback(mCallbackManager, new FacebookCallback<LoginResult>() {
-            @Override
-            public void onSuccess(LoginResult loginResult) {
-                Log.i(TAG, loginResult.getAccessToken().getToken());
-                firebaseAuthWithFacebook(loginResult.getAccessToken());
-            }
+            .getInstance()
+            .registerCallback(mCallbackManager, new FacebookCallback<LoginResult>() {
+                @Override
+                public void onSuccess(LoginResult loginResult) {
+                    Log.i(TAG, loginResult.getAccessToken().getToken());
+                    firebaseAuthWithFacebook(loginResult.getAccessToken());
+                }
 
-            @Override
-            public void onCancel() {
-                Log.w(TAG, "Cancel");
-            }
+                @Override
+                public void onCancel() {
+                    Log.w(TAG, "Cancel");
+                }
 
-            @Override
-            public void onError(FacebookException error) {
-                Log.e(TAG, "FacebookException", error);
-                authenticationFailedAction();
-            }
-        });
+                @Override
+                public void onError(FacebookException error) {
+                    Log.e(TAG, "FacebookException", error);
+                    authenticationFailedAction();
+                }
+            });
     }
 
     @Override
@@ -103,9 +139,12 @@ public class LoginActivity extends AppCompatActivity {
                 Log.w(TAG, "Google sign in failed", e);
                 authenticationFailedAction();
             }
-        }else {
+        } else {
             // Facebook ActivityResult
             mCallbackManager.onActivityResult(requestCode, resultCode, data);
+
+            // Twitter
+            twitterLoginButton.onActivityResult(requestCode, resultCode, data);
         }
     }
 
@@ -113,6 +152,36 @@ public class LoginActivity extends AppCompatActivity {
         AuthCredential authCredential = FacebookAuthProvider.getCredential(accessToken.getToken());
         mFirebaseAuth
                 .signInWithCredential(authCredential)
+                .addOnCompleteListener(this::onTaskCompleteHandle);
+    }
+
+    private void firebaseAuthWithGoogle(@NonNull GoogleSignInAccount signInAccount) {
+        AuthCredential credential = GoogleAuthProvider.getCredential(signInAccount.getIdToken(), null);
+        mFirebaseAuth.signInWithCredential(credential)
+                .addOnCompleteListener(this::onTaskCompleteHandle);
+    }
+
+    private void firebaseAuthWithUsernamePassword(String email, String password) {
+        if((email == null || email.isEmpty())) {
+            Toast.makeText(this, "Email is required to login", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        if((password == null || password.isEmpty())) {
+            Toast.makeText(this, "Password is required to login", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        mFirebaseAuth.signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this::onTaskCompleteHandle);
+    }
+
+    private void firebaseAuthWithTwitter(TwitterSession twitterSession) {
+        AuthCredential credential = TwitterAuthProvider.getCredential(
+                twitterSession.getAuthToken().token,
+                twitterSession.getAuthToken().secret);
+
+        mFirebaseAuth.signInWithCredential(credential)
                 .addOnCompleteListener(this::onTaskCompleteHandle);
     }
 
@@ -132,6 +201,7 @@ public class LoginActivity extends AppCompatActivity {
             voidTask.addOnSuccessListener(aVoid -> loginSuccessfully())
                     .addOnFailureListener(e -> authenticationFailedAction());
         }else {
+            Log.e("Login Activity", "Auth failed", task.getException());
             authenticationFailedAction();
         }
     }
@@ -139,20 +209,6 @@ public class LoginActivity extends AppCompatActivity {
     private void authenticationFailedAction() {
         // If sign in fails, display a message to the user.
         Snackbar.make(findViewById(R.id.main_layout), LoginActivity.this.getString(R.string.auth_failed), Snackbar.LENGTH_SHORT).show();
-    }
-
-    private void firebaseAuthWithGoogle(@NonNull GoogleSignInAccount signInAccount) {
-        AuthCredential credential = GoogleAuthProvider.getCredential(signInAccount.getIdToken(), null);
-        mFirebaseAuth.signInWithCredential(credential)
-                .addOnCompleteListener(this::onTaskCompleteHandle);
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-
-        FirebaseUser currentUser = mFirebaseAuth.getCurrentUser();
-        updateUI((currentUser));
     }
 
     @OnClick(R.id.btnGoogle)
@@ -168,20 +224,17 @@ public class LoginActivity extends AppCompatActivity {
                 .logInWithReadPermissions(this, Arrays.asList("public_profile", "email"));
     }
 
-//    private void signOut() {
-//        mFirebaseAuth.signOut();
-//
-//        mGoogleSignInClient.signOut()
-//                .addOnCompleteListener(task -> updateUI(null));
-//    }
+    @OnClick(R.id.btnTwitter)
+    public void twitterSignIn() {
+        twitterLoginButton.performClick();
+    }
 
-    private void updateUI(@Nullable FirebaseUser user) {
-        if(user == null) {
-            Toast.makeText(this, "Disconnected", Toast.LENGTH_LONG).show();
-            return;
-        }
+    @OnClick(R.id.btnLogin)
+    public void usernamePasswordSignIn() {
+        String email = Objects.requireNonNull(userNameEditText.getText()).toString();
+        String password = Objects.requireNonNull(passwordEditText.getText()).toString();
 
-        loginSuccessfully();
+        firebaseAuthWithUsernamePassword(email, password);
     }
 
     private void loginSuccessfully() {

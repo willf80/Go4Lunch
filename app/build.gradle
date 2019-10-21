@@ -64,6 +64,10 @@ dependencies {
     // Facebook
     implementation 'com.facebook.android:facebook-login:5.5.0'
 
+    // Twitter
+    implementation 'com.twitter.sdk.android:twitter:3.1.1'
+    implementation 'com.twitter.sdk.android:twitter-core:3.1.1'
+
     // Retrofit
     implementation 'com.squareup.retrofit2:retrofit:2.6.2'
     implementation 'com.squareup.retrofit2:adapter-rxjava2:2.6.2'
