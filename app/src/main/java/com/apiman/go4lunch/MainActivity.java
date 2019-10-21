@@ -3,7 +3,6 @@ package com.apiman.go4lunch;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -142,6 +141,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Picasso.get()
                 .load(user.getPhotoUrl())
                 .resize(80, 80)
+                .error(R.drawable.user_profil)
+                .placeholder(R.drawable.user_profil)
                 .into(profileImage);
     }
 

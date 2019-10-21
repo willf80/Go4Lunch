@@ -81,7 +81,8 @@ public class WorkmateBookingAdapter extends RecyclerView.Adapter<WorkmateBooking
                 .load(photoUrl)
                 .resize(64, 64)
                 .centerCrop()
-                .error(R.mipmap.ic_launcher)
+                .error(R.drawable.user_profile_black)
+                .placeholder(R.drawable.user_profile_black)
                 .into(imageView);
     }
 

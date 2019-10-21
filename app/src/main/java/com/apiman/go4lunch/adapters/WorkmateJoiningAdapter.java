@@ -49,7 +49,8 @@ public class WorkmateJoiningAdapter extends RecyclerView.Adapter<WorkmateJoining
                 .load(workmate.photo)
                 .resize(64, 64)
                 .centerCrop()
-                .error(R.mipmap.ic_launcher)
+                .error(R.drawable.user_profil)
+                .placeholder(R.drawable.user_profil)
                 .into(holder.profileImageView);
     }
 
