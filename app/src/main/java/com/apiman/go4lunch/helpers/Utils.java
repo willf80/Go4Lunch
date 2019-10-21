@@ -191,6 +191,10 @@ public class Utils {
 
         fullName = fullName.trim();
         int index = fullName.indexOf(' ');
-        return fullName.substring(0, index).trim();
+        if(index > 0){
+            return fullName.substring(0, index).trim();
+        }
+
+        return fullName;
     }
 }
