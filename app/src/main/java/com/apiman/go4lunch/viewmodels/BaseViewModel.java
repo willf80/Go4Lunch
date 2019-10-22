@@ -215,6 +215,7 @@ public class BaseViewModel extends ViewModel {
     }
 
     public void searchAutoComplete(PlacesClient placesClient, String query) {
+//        Log.e("BASE SEARCH -> ", query);
         if(searchMode == SearchMode.WORKMATES) {
             return;
         }
@@ -223,6 +224,7 @@ public class BaseViewModel extends ViewModel {
                 .addOnSuccessListener(response -> {
                     mSearchRestaurantList = new ArrayList<>();
                     for (AutocompletePrediction prediction : response.getAutocompletePredictions()) {
+//                        Log.e("BASE", prediction.getFullText(null) + " : " + prediction.getPlaceId());
                         List<Place.Type> placesType = prediction.getPlaceTypes();
                         if(!placesType.contains(Place.Type.RESTAURANT)) continue;
 
@@ -230,6 +232,7 @@ public class BaseViewModel extends ViewModel {
                                 .filter(restaurant -> Objects.equals(restaurant.getPlaceId(), prediction.getPlaceId()))
                                 .blockingFirst(null);
 
+                        //Place place; place.
                         if(restaurantFound != null) mSearchRestaurantList.add(restaurantFound);
                     }
 

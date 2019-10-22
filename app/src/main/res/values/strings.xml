@@ -4,6 +4,7 @@
     <string name="title_list_view">List View</string>
     <string name="title_workmates">Workmates</string>
     <string name="title_settings">Settings</string>
+    <string name="title_new_account">New account</string>
     <string name="title_workmates_available">Available workmates</string>
     <string name="search">Search</string>
 
@@ -24,7 +25,7 @@
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
-    <string name="auth_failed">Authentication failed</string>
+    <string name="auth_failed_default_message">Authentication failed</string>
     <string name="operation_failed">Operation failed, please retry later</string>
     <string name="api_base_url">https://maps.googleapis.com/</string>
     <string name="place_photo_url">https://maps.googleapis.com/maps/api/place/photo?maxwidth=%d&amp;photoreference=%s&amp;key=%s</string>
@@ -52,4 +53,20 @@
     <string name="login">Login</string>
     <string name="or">Or login with</string>
     <string name="create_new_account">Create new account</string>
+    <string name="full_name">Full name</string>
+    <string name="password_bis">Password bis</string>
+    <string name="validate">Validate</string>
+    <string name="minimum_characters_required">The password would be at least 6 characters</string>
+    <string name="create_new_account_instruction">Please fill the below form to create your account. All fields are mandatory.</string>
+    <string name="invalid_username_or_password">The password is invalid or the user does not have a password</string>
+    <string name="email_required_to_login">Email is required to login</string>
+    <string name="password_required_to_login">Password is required to login</string>
+    <string name="connected">Connected</string>
+    <string name="full_name_required">Your full name is required</string>
+    <string name="email_is_required">Your email is required</string>
+    <string name="password_is_required">Password is required</string>
+    <string name="not_same_password">Password is not the same.</string>
+    <string name="account_created_succcessfully">Your account are created successfully !</string>
+    <string name="email_already_used">The email address is already in use by another account</string>
+    <string name="new_account_creation_failed">New account creation are failed. Please retry later.</string>
 </resources>
