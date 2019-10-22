@@ -106,7 +106,7 @@ public class BaseViewModel extends ViewModel {
                 });
     }
 
-    private Flowable<Restaurant> updateRestaurantItemFlowable(Context context, Restaurant restaurant) {
+    public Flowable<Restaurant> updateRestaurantItemFlowable(Context context, Restaurant restaurant) {
         return RestaurantStreams
                 .getRestaurantDetailsFlowable(context, restaurant.getPlaceId())
                 .map(detailsResponse -> applyRestaurantDetails(restaurant, detailsResponse.getApiResult()))

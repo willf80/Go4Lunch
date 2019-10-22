@@ -66,10 +66,13 @@
 
                 <data android:scheme="@string/facebook_login_protocol_scheme" />
             </intent-filter>
-        </activity> <!-- [START Google Maps Key] -->
+        </activity>
+        <!-- [START Google Maps Key] -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="@string/google_maps_key" /> <!-- [END Google Maps Key] -->
+            android:value="@string/google_maps_key" />
+        <!-- [END Google Maps Key] -->
+
         <!-- [START Notification receiver] -->
         <receiver
             android:name=".broadcast.AppNotificationReceiver"
@@ -82,6 +85,7 @@
                 <action android:name="android.intent.action.QUICKBOOT_POWERON" />
             </intent-filter>
         </receiver>
+        <!-- [END Notification receiver] -->
     </application>
 
 </manifest>

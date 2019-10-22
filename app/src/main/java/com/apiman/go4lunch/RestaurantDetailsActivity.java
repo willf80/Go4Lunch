@@ -19,10 +19,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.apiman.go4lunch.adapters.WorkmateJoiningAdapter;
 import com.apiman.go4lunch.fragments.ProgressDialogFragment;
 import com.apiman.go4lunch.fragments.RatingDialogFragment;
+import com.apiman.go4lunch.helpers.FireStoreUtils;
+import com.apiman.go4lunch.helpers.Utils;
 import com.apiman.go4lunch.models.Rating;
 import com.apiman.go4lunch.models.Restaurant;
 import com.apiman.go4lunch.models.Workmate;
-import com.apiman.go4lunch.helpers.FireStoreUtils;
 import com.apiman.go4lunch.services.RestaurantStreams;
 import com.apiman.go4lunch.viewmodels.RestaurantDetailsViewModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -80,6 +81,7 @@ public class RestaurantDetailsActivity extends BaseActivity implements RatingDia
 
     String mPlaceId;
     String mPhotoReference;
+    String mStatus;
     Restaurant mRestaurant;
     Disposable disposable;
 
@@ -96,6 +98,7 @@ public class RestaurantDetailsActivity extends BaseActivity implements RatingDia
 
         mPlaceId = getIntent().getStringExtra(FireStoreUtils.FIELD_PLACE_ID);
         mPhotoReference = getIntent().getStringExtra(FireStoreUtils.FIELD_PHOTO);
+        mStatus = getIntent().getStringExtra(FireStoreUtils.FIELD_STATUS);
 
         mDetailsViewModel = ViewModelProviders.of(this).get(RestaurantDetailsViewModel.class);
 
@@ -157,7 +160,7 @@ public class RestaurantDetailsActivity extends BaseActivity implements RatingDia
                     ratingBar.setRating(rating);
 
                     if(!isRated) return;
-                    Toast.makeText(this, "Rating saved successfully.", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, this.getString(R.string.rating_saved), Toast.LENGTH_LONG).show();
 
                     Intent data = new Intent();
                     data.putExtra(EXTRA_DATA_RATING_KEY, rating);
@@ -277,6 +280,26 @@ public class RestaurantDetailsActivity extends BaseActivity implements RatingDia
                 .show();
     }
 
+    void confirmClosingSoonBooking() {
+        new AlertDialog.Builder(this)
+                .setTitle("Confirmation")
+                .setMessage("The restaurant is closing soon. Do you want to book in this restaurant despite ?") //Voulez-vous réserver dans ce restaurant?
+                .setNegativeButton("No", null)
+                .setPositiveButton("Yes, I want",
+                        (dialog, which) -> mDetailsViewModel.markRestaurantAsSelected(mRestaurant))
+                .create()
+                .show();
+    }
+
+    void restaurantClosedInformation() {
+        new AlertDialog.Builder(this)
+                .setTitle("Information")
+                .setMessage("The restaurant is closed. Please try to book another one.") //Voulez-vous réserver dans ce restaurant?
+                .setNegativeButton("OK", null)
+                .create()
+                .show();
+    }
+
     void confirmCancelBooking() {
         new AlertDialog.Builder(this)
                 .setTitle("Confirmation")
@@ -298,7 +321,20 @@ public class RestaurantDetailsActivity extends BaseActivity implements RatingDia
             return;
         }
 
-        confirmBooking();
+        switch (mStatus) {
+            case Utils
+                    .RESTAURANT_STATUS_CLOSING_SOON:
+                confirmClosingSoonBooking();
+                break;
+
+            case Utils.RESTAURANT_STATUS_CLOSED:
+                restaurantClosedInformation();
+                break;
+
+            default:
+                confirmBooking();
+        }
+
     }
 
     @Override

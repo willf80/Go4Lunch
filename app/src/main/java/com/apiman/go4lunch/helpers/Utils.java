@@ -15,6 +15,9 @@ import io.reactivex.Observable;
 
 public class Utils {
     private static final int earthRadius = 6_371;
+    public static final String RESTAURANT_STATUS_OPEN = "OPEN";
+    public static final String RESTAURANT_STATUS_CLOSING_SOON = "CLOSING_SOON";
+    public static final String RESTAURANT_STATUS_CLOSED = "CLOSED";
 
     /**
      * Source : http://villemin.gerard.free.fr/aGeograp/Distance.htm

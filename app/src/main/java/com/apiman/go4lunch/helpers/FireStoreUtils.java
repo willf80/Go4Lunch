@@ -36,6 +36,7 @@ public class FireStoreUtils {
     private static final String COL_PATH_RATING_USERS = "rating_users";
 
     public static final String FIELD_PHOTO = "photo";
+    public static final String FIELD_STATUS = "status";
     public static final String FIELD_PLACE_ID = "placeId";
     public static final String FIELD_USER = "user";
 

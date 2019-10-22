@@ -15,6 +15,7 @@ import androidx.lifecycle.ViewModelProviders;
 
 import com.apiman.go4lunch.R;
 import com.apiman.go4lunch.RestaurantDetailsActivity;
+import com.apiman.go4lunch.helpers.Utils;
 import com.apiman.go4lunch.models.Restaurant;
 import com.apiman.go4lunch.viewmodels.BaseViewModel;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -29,8 +30,13 @@ import com.karumi.dexter.listener.single.PermissionListener;
 
 import java.util.Objects;
 
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
+
 import static com.apiman.go4lunch.helpers.FireStoreUtils.FIELD_PHOTO;
 import static com.apiman.go4lunch.helpers.FireStoreUtils.FIELD_PLACE_ID;
+import static com.apiman.go4lunch.helpers.FireStoreUtils.FIELD_STATUS;
 
 public abstract class BaseFragment extends Fragment {
     private static final int BOOKING_REQUEST_CODE = 8000;
@@ -38,6 +44,7 @@ public abstract class BaseFragment extends Fragment {
     BaseViewModel mViewModel;
     private FusedLocationProviderClient mFusedLocationProviderClient;
     private Activity mActivity;
+    private Disposable disposable;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -129,11 +136,49 @@ public abstract class BaseFragment extends Fragment {
     }
 
     void showRestaurantDetails(Restaurant restaurant) {
+        if(restaurant.getStatus() == null) {
+            ProgressDialogFragment dialogFragment = ProgressDialogFragment.newInstance();
+            dialogFragment.show(getFragmentManager());
+
+            disposable = mViewModel.updateRestaurantItemFlowable(getContext(), restaurant)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .doOnError(throwable -> dialogFragment.dismiss())
+                    .subscribe(r -> {
+                        dialogFragment.dismiss();
+                        startDetailsActivity(r);
+                    });
+
+            return;
+        }
+
+        startDetailsActivity(restaurant);
+    }
+
+    private void startDetailsActivity(Restaurant restaurant) {
         Intent intent = new Intent(getContext(), RestaurantDetailsActivity.class);
         intent.putExtra(FIELD_PLACE_ID, restaurant.getPlaceId());
         intent.putExtra(FIELD_PHOTO, restaurant.getPhotoReference());
+
+        String status = Utils.RESTAURANT_STATUS_OPEN;
+        if(restaurant.isClosingSoon()) {
+            status = Utils.RESTAURANT_STATUS_CLOSING_SOON;
+        } else if(!restaurant.isOpenNow()) {
+            status = Utils.RESTAURANT_STATUS_CLOSED;
+        }
+
+        intent.putExtra(FIELD_STATUS, status);
+
         startActivityForResult(intent, BOOKING_REQUEST_CODE);
     }
 
     abstract void refreshData();
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if(disposable != null && !disposable.isDisposed()) {
+            disposable.dispose();
+        }
+    }
 }
