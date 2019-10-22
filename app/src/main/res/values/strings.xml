@@ -35,7 +35,7 @@
     <string name="loading_text">Loading, please wait…</string>
 
     <string name="warning_select_number_of_star">Please select the number of stars before validation</string>
-    <string name="restaurant_name">Le Zinc</string>
+    <string name="sample_restaurant_name">Le Zinc</string>
     <string name="restaurant_address">12 rue du Faubourg Poissonnière</string>
     <string name="call">Call</string>
     <string name="like">Like</string>
@@ -70,4 +70,32 @@
     <string name="email_already_used">The email address is already in use by another account</string>
     <string name="new_account_creation_failed">New account creation are failed. Please retry later.</string>
     <string name="rating_saved">Rating saved successfully.</string>
+    <string name="has_not_decided_yet">%s hasn\'t decided yet</string>
+    <string name="is_eating_at_restaurant">%s is eating at (%s) restaurant</string>
+    <string name="workmate_is_joining">%s is joining!</string>
+    <string name="notification_part1">"It's time to go eat!\nYour restaurant [%s] at [%s] wait you.\n"</string>
+    <string name="notification_part2">Your workmates [%s] will also be present</string>
+    <string name="status_closed">Closed</string>
+    <string name="status_closing_soon">Closing soon</string>
+    <string name="open_24h">Open 24/7</string>
+    <string name="open_until">Open until</string>
+    <string name="information">Information</string>
+    <string name="message_restaurant_is_closed">The restaurant is closed. Please try to book another one.</string>
+    <string name="remove_booking_confirmation">Do you want to remove your booking ?</string>
+    <string name="ok">OK</string>
+    <string name="no">No</string>
+    <string name="yes_remove_it">Yes, remove it</string>
+    <string name="yes_i_want">Yes, I want</string>
+    <string name="restaurant_is_closing_soon">The restaurant is closing soon. Do you want to book in this restaurant despite ?</string>
+    <string name="booking_confirmation">Do you want to book in this restaurant?</string>
+    <string name="sample_name">Falone Kouadio</string>
+    <string name="sample_email">willyfkouadio@gmail.com</string>
+    <string name="sample_notification_title">Notification</string>
+    <string name="please_rating_this_restaurant">Please rating this restaurant</string>
+    <string name="comment">Comment</string>
+    <string name="cancel">Cancel</string>
+    <string name="total_workmates">(0)</string>
+    <string name="sample_restaurant_status">Open until 7pm</string>
+    <string name="sample_distance_120m">120m</string>
+    <string name="sample_falone_is_eating_ivorian_le_zinc">Falone is eating ivorian (Le Zinc)</string>
 </resources>

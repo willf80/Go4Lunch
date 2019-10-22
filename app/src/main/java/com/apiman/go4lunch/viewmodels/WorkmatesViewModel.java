@@ -37,9 +37,7 @@ public class WorkmatesViewModel extends ViewModel {
         FireStoreUtils.getWorkmatesCollection()
             .get()
             .addOnSuccessListener(this::fetchWorkmatesData)
-            .addOnFailureListener(e -> {
-
-            });
+            .addOnFailureListener(e -> {});
     }
 
     private void fetchWorkmatesData(QuerySnapshot query){

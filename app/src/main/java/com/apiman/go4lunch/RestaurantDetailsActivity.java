@@ -245,7 +245,6 @@ public class RestaurantDetailsActivity extends BaseActivity implements RatingDia
 
     @OnClick(R.id.likeBtn)
     void showRatingDialog(){
-
         final ProgressDialogFragment dialogFragment = ProgressDialogFragment.newInstance();
         dialogFragment.show(getSupportFragmentManager());
 
@@ -271,10 +270,10 @@ public class RestaurantDetailsActivity extends BaseActivity implements RatingDia
 
     void confirmBooking() {
         new AlertDialog.Builder(this)
-                .setTitle("Confirmation")
-                .setMessage("Do you want to book in this restaurant?") //Voulez-vous réserver dans ce restaurant?
-                .setNegativeButton("No", null)
-                .setPositiveButton("Yes, I want",
+                .setTitle(R.string.information)
+                .setMessage(R.string.booking_confirmation)
+                .setNegativeButton(R.string.no, null)
+                .setPositiveButton(R.string.yes_i_want,
                         (dialog, which) -> mDetailsViewModel.markRestaurantAsSelected(mRestaurant))
                 .create()
                 .show();
@@ -282,10 +281,10 @@ public class RestaurantDetailsActivity extends BaseActivity implements RatingDia
 
     void confirmClosingSoonBooking() {
         new AlertDialog.Builder(this)
-                .setTitle("Confirmation")
-                .setMessage("The restaurant is closing soon. Do you want to book in this restaurant despite ?") //Voulez-vous réserver dans ce restaurant?
-                .setNegativeButton("No", null)
-                .setPositiveButton("Yes, I want",
+                .setTitle(R.string.information)
+                .setMessage(R.string.restaurant_is_closing_soon)
+                .setNegativeButton(R.string.no, null)
+                .setPositiveButton(R.string.yes_i_want,
                         (dialog, which) -> mDetailsViewModel.markRestaurantAsSelected(mRestaurant))
                 .create()
                 .show();
@@ -293,19 +292,19 @@ public class RestaurantDetailsActivity extends BaseActivity implements RatingDia
 
     void restaurantClosedInformation() {
         new AlertDialog.Builder(this)
-                .setTitle("Information")
-                .setMessage("The restaurant is closed. Please try to book another one.") //Voulez-vous réserver dans ce restaurant?
-                .setNegativeButton("OK", null)
+                .setTitle(R.string.information)
+                .setMessage(R.string.message_restaurant_is_closed)
+                .setNegativeButton(R.string.ok, null)
                 .create()
                 .show();
     }
 
     void confirmCancelBooking() {
         new AlertDialog.Builder(this)
-                .setTitle("Confirmation")
-                .setMessage("Do you want to remove your booking ?")
-                .setNegativeButton("No", null)
-                .setPositiveButton("Yes, remove it",
+                .setTitle(R.string.information)
+                .setMessage(R.string.remove_booking_confirmation)
+                .setNegativeButton(R.string.no, null)
+                .setPositiveButton(R.string.yes_remove_it,
                         (dialog, which) -> {
                             mDetailsViewModel.removeBooking(mRestaurant.getPlaceId());
                             setResult(BOOKED_RESULT_CODE);
@@ -334,7 +333,6 @@ public class RestaurantDetailsActivity extends BaseActivity implements RatingDia
             default:
                 confirmBooking();
         }
-
     }
 
     @Override

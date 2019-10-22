@@ -37,7 +37,7 @@
                         android:id="@+id/nameTextView"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:text="@string/restaurant_name"
+                        android:text="@string/sample_restaurant_name"
                         android:layout_weight="1"
                         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                         android:textColor="@android:color/white" />

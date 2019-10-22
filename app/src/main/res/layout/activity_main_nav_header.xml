@@ -56,7 +56,7 @@
                 android:id="@+id/userNameTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Falone Kouadio"
+                android:text="@string/sample_name"
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                 android:textColor="@android:color/white"
                 android:textStyle="bold"/>
@@ -65,7 +65,7 @@
                 android:id="@+id/emailTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="willyfkouadio@gmail.com"
+                android:text="@string/sample_email"
                 android:textColor="@android:color/white" />
         </LinearLayout>
 

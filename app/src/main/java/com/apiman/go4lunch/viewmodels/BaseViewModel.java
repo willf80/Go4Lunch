@@ -109,7 +109,7 @@ public class BaseViewModel extends ViewModel {
     public Flowable<Restaurant> updateRestaurantItemFlowable(Context context, Restaurant restaurant) {
         return RestaurantStreams
                 .getRestaurantDetailsFlowable(context, restaurant.getPlaceId())
-                .map(detailsResponse -> applyRestaurantDetails(restaurant, detailsResponse.getApiResult()))
+                .map(detailsResponse -> applyRestaurantDetails(context, restaurant, detailsResponse.getApiResult()))
                 .map(restaurantWithDetails -> {
                     QuerySnapshot snapshot = Tasks.await(FireStoreUtils.getRestaurantRatingScore(restaurant.getPlaceId()).get());
                     Float rating = FireStoreUtils.averageRating(snapshot);
@@ -131,7 +131,7 @@ public class BaseViewModel extends ViewModel {
             .subscribe();
     }
 
-    private Restaurant applyRestaurantDetails(Restaurant restaurant, ApiDetailsResult detailsResult){
+    private Restaurant applyRestaurantDetails(Context context, Restaurant restaurant, ApiDetailsResult detailsResult){
         ApiDetailsResult.OpeningHour openingHour = detailsResult.getOpeningHour();
 
         if (openingHour != null) {
@@ -143,7 +143,7 @@ public class BaseViewModel extends ViewModel {
             boolean isClosingSoon = Utils.isClosingSoon(periodList, dayIndex, currentTime);
 
             Period period = Utils.getCurrentPeriod(periodList, dayIndex, currentTime);
-            String status = Utils.restaurantStatus(isOpenNow, isClosingSoon, period);
+            String status = Utils.restaurantStatus(context, isOpenNow, isClosingSoon, period);
 
             restaurant.setOpenNow(isOpenNow);
             restaurant.setClosingSoon(isClosingSoon);

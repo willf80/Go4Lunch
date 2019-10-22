@@ -27,7 +27,7 @@ public class MapsFragment extends BaseFragment implements OnMapReadyCallback {
 
     private GoogleMap mMap;
     private boolean mLocationPermissionGranted = false;
-    private LatLng mDefaultLocation = new LatLng(40.6971494,-74.2598642);
+    private LatLng mDefaultLocation = new LatLng(46.1313871,-2.4356672);
 
     private Restaurant mRestaurantSelected;
 

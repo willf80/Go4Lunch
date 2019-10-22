@@ -1,5 +1,6 @@
 package com.apiman.go4lunch.adapters;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -43,7 +44,7 @@ public class WorkmateJoiningAdapter extends RecyclerView.Adapter<WorkmateJoining
     @Override
     public void onBindViewHolder(@NonNull WorkmateViewHolder holder, int position) {
         Workmate workmate = mWorkmates.get(position);
-        holder.textView.setText(String.format("%s is joining!", workmate.displayName));
+        holder.textView.setText(String.format(holder.context.getString(R.string.workmate_is_joining), workmate.displayName));
 
         Picasso.get()
                 .load(workmate.photo)
@@ -67,9 +68,12 @@ public class WorkmateJoiningAdapter extends RecyclerView.Adapter<WorkmateJoining
         @BindView(R.id.profile_image)
         CircleImageView profileImageView;
 
+        Context context;
+
         WorkmateViewHolder(@NonNull View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
+            context = itemView.getContext();
         }
     }
 }

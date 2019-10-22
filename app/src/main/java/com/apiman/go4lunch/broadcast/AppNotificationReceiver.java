@@ -80,40 +80,31 @@ public class AppNotificationReceiver extends BroadcastReceiver {
                     Booking booking = documentSnapshot.toObject(Booking.class);
                     if(booking != null && !Objects.equals(booking.user.uuid, userId)){
                         s.append(booking.user.displayName);
-                        s.append(",");
+                        s.append(", ");
                     }
                     return s;
                 })
                 .map(stringBuilder -> {
-                    if(stringBuilder.length() > 0){
-                        stringBuilder = stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+                    if(stringBuilder.length() > 1){
+                        stringBuilder = stringBuilder.deleteCharAt(stringBuilder.length() - 2);
                     }
 
-                    return stringBuilder.toString();
+                    return stringBuilder.toString().trim();
                 })
                 .toObservable();
     }
 
     private void buildAndShowMessages(Context context, NotificationData notificationData){
-        StringBuilder messageBuilder = new StringBuilder();
-        messageBuilder.append("It's time to go eat!");
-        messageBuilder.append("\n");
-        messageBuilder.append("Your restaurant ");
-        messageBuilder.append("[");
-        messageBuilder.append(notificationData.restaurantName);
-        messageBuilder.append("] ");
-        messageBuilder.append(" at [");
-        messageBuilder.append(notificationData.restaurantAddress);
-        messageBuilder.append("] wait you.");
+        String message = String.format(context.getString(R.string.notification_part1),
+                notificationData.restaurantName, notificationData.restaurantAddress);
 
         if(notificationData.listOfWorkmates != null && !notificationData.listOfWorkmates.isEmpty()) {
-            messageBuilder.append(" Your workmates [");
-            messageBuilder.append(notificationData.listOfWorkmates);
-            messageBuilder.append("] ");
-            messageBuilder.append("will also be present");
+            String messagePart2 = String.format(context.getString(R.string.notification_part2),
+                    notificationData.listOfWorkmates);
+            message += messagePart2;
         }
 
-        sendNotification(context, messageBuilder.toString());
+        sendNotification(context, message);
     }
 
     private void getNotificationData(Context context) {

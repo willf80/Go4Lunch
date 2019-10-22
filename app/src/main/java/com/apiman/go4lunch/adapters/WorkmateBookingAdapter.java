@@ -62,10 +62,10 @@ public class WorkmateBookingAdapter extends RecyclerView.Adapter<WorkmateBooking
         String text;
         boolean areBooked = false;
         if(booking == null) {
-            text = String.format("%s hasn't decided yet", Utils.shortName(workmate.displayName));
+            text = String.format(holder.context.getString(R.string.has_not_decided_yet), Utils.shortName(workmate.displayName));
             areBooked = true;
         }else{
-            text = String.format("%s is eating at (%s) restaurant",
+            text = String.format(holder.context.getString(R.string.is_eating_at_restaurant),
                     Utils.shortName(workmate.displayName),
                     booking.restaurantName);
         }

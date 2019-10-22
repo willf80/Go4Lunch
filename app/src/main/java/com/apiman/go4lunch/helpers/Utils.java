@@ -1,7 +1,10 @@
 package com.apiman.go4lunch.helpers;
 
+import android.content.Context;
+
 import androidx.annotation.Nullable;
 
+import com.apiman.go4lunch.R;
 import com.apiman.go4lunch.models.DayTime;
 import com.apiman.go4lunch.models.Period;
 
@@ -168,25 +171,25 @@ public class Utils {
                 .blockingLast(false);
     }
 
-    public static String restaurantStatus(boolean isOpenNow, boolean isClosingSoon, @Nullable Period period){
-        return restaurantStatus(isOpenNow, isClosingSoon, period, Locale.getDefault());
+    public static String restaurantStatus(Context context, boolean isOpenNow, boolean isClosingSoon, @Nullable Period period){
+        return restaurantStatus(context, isOpenNow, isClosingSoon, period, Locale.getDefault());
     }
 
-    public static String restaurantStatus(
+    public static String restaurantStatus(Context context,
             boolean isOpenNow, boolean isClosingSoon, @Nullable Period period, Locale locale){
         if(!isOpenNow){
-            return "Closed";
+            return context.getString(R.string.status_closed);
         }
 
         if(isClosingSoon) {
-            return "Closing soon";
+            return context.getString(R.string.status_closing_soon);
         }
 
         if((period == null) || (period.close == null)) {
-            return "Open 24/7";
+            return context.getString(R.string.open_24h);
         }
 
-        return "Open until " + period.close.getTime(locale);
+        return context.getString(R.string.open_until) + period.close.getTime(locale);
     }
 
     public static String shortName(String fullName) {

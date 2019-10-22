@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="1dp"
     android:background="@android:color/white"
     android:foreground="?android:selectableItemBackground"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    tools:ignore="UnusedAttribute">
     <ImageView
         android:id="@+id/imageView"
         android:layout_width="96dp"
@@ -17,7 +19,8 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/plat" />
+        app:srcCompat="@drawable/plat"
+        tools:ignore="ContentDescription" />
 
     <RatingBar
         android:id="@+id/ratingBar"
@@ -35,7 +38,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
-        android:text="French - 12 rue du Faubourg Poissonnière"
+        android:text="@string/restaurant_address"
         app:layout_constraintBottom_toTopOf="@+id/textView5"
         app:layout_constraintEnd_toStartOf="@+id/workmatesTextView"
         app:layout_constraintStart_toStartOf="parent"
@@ -48,7 +51,7 @@
         android:layout_marginEnd="8dp"
         android:drawableStart="@drawable/ic_person_outline_black_24dp"
         android:gravity="bottom"
-        android:text="(0)"
+        android:text="@string/total_workmates"
         app:layout_constraintBottom_toTopOf="@+id/ratingBar"
         app:layout_constraintEnd_toStartOf="@+id/imageView"
         app:layout_constraintTop_toBottomOf="@+id/distanceTextView" />
@@ -59,7 +62,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
-        android:text="Open until 7pm"
+        android:text="@string/sample_restaurant_status"
         android:textStyle="italic"
         app:layout_constraintBottom_toBottomOf="@+id/imageView"
         app:layout_constraintEnd_toStartOf="@+id/ratingBar"
@@ -72,7 +75,7 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
-        android:text="Le Zinc"
+        android:text="@string/sample_restaurant_name"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
         android:textColor="@android:color/black"
         app:layout_constraintEnd_toStartOf="@+id/distanceTextView"
@@ -86,7 +89,7 @@
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:gravity="center_vertical|end"
-        android:text="120m"
+        android:text="@string/sample_distance_120m"
         app:layout_constraintEnd_toStartOf="@+id/imageView"
         app:layout_constraintTop_toTopOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

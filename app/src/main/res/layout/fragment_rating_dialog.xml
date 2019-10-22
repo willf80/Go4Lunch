@@ -10,7 +10,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Please rating this restaurant"
+        android:text="@string/please_rating_this_restaurant"
         android:textAlignment="center"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
 
@@ -30,10 +30,11 @@
         android:layout_height="wrap_content"
         android:ems="10"
         android:gravity="start|top"
-        android:hint="Comment"
+        android:hint="@string/comment"
         android:inputType="textMultiLine|text|textCapSentences"
         android:maxLines="3"
-        android:minLines="2" />
+        android:minLines="2"
+        android:importantForAutofill="no" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -42,10 +43,10 @@
 
         <Button
             android:id="@+id/cancelBtn"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Cancel"
+            android:text="@string/cancel"
             style="@style/Widget.AppCompat.Button.Borderless"/>
 
         <View
@@ -54,10 +55,11 @@
 
         <Button
             android:id="@+id/okBtn"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="OK"
+            android:text="@string/ok"
+            android:textColor="@android:color/black"
             style="@style/Widget.AppCompat.Button.Colored"/>
     </LinearLayout>
 

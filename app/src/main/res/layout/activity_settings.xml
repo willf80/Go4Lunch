@@ -29,7 +29,7 @@
                 android:id="@+id/textView2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Notification"
+                android:text="@string/sample_notification_title"
                 android:layout_marginBottom="16dp"
                 android:textAppearance="@style/TextAppearance.AppCompat.Title" />
 
