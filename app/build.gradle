@@ -22,6 +22,11 @@ android {
         sourceCompatibility = 1.8
         targetCompatibility = 1.8
     }
+
+    testOptions {
+        unitTests.returnDefaultValues = true
+        unitTests.includeAndroidResources = true
+    }
 }
 
 dependencies {
@@ -52,7 +57,7 @@ dependencies {
     implementation 'com.shaishavgandhi:login-buttons:1.0.0'
 
     // Firebase
-    implementation 'com.google.firebase:firebase-firestore:21.1.1'
+    implementation 'com.google.firebase:firebase-firestore:21.2.0'
     implementation 'com.google.firebase:firebase-auth:19.1.0'
 
     // Google Services
@@ -84,11 +89,13 @@ dependencies {
 
     // Tests
     testImplementation 'junit:junit:4.12'
+    testImplementation "org.mockito:mockito-core:3.1.0"
     androidTestImplementation 'androidx.test:runner:1.2.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
     androidTestImplementation "android.arch.core:core-testing:1.1.1"
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test:core:1.2.0'
+    androidTestImplementation 'org.mockito:mockito-android:3.1.0'
 }
 apply plugin: 'com.google.gms.google-services'  // Google Play services Gradle plugin
 

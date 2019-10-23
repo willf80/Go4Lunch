@@ -1,10 +1,15 @@
 package com.apiman.go4lunch;
 
+import android.content.Context;
+
+import com.apiman.go4lunch.helpers.Utils;
 import com.apiman.go4lunch.models.DayTime;
 import com.apiman.go4lunch.models.Period;
-import com.apiman.go4lunch.helpers.Utils;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,8 +18,13 @@ import java.util.Locale;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
 import static junit.framework.TestCase.assertTrue;
+import static org.mockito.Mockito.when;
 
+@RunWith(MockitoJUnitRunner.class)
 public class UtilsTest {
+
+    @Mock
+    private Context appContext;
 
     @Test
     public void should_return_0m() {
@@ -130,12 +140,15 @@ public class UtilsTest {
 
     @Test
     public void should_return_restaurant_status_closed() {
+        when(appContext.getString(R.string.status_closed))
+                .thenReturn("Closed");
+
         List<Period> periodList = createPeriodMock();
         boolean isOpenNow = false;
         boolean isClosingSoon = false;
 
         Period period = periodList.get(0);
-        String status = Utils.restaurantStatus(isOpenNow, isClosingSoon, period);
+        String status = Utils.restaurantStatus(appContext, isOpenNow, isClosingSoon, period);
 
         assertNotNull(period);
         assertEquals("Closed", status);
@@ -143,12 +156,15 @@ public class UtilsTest {
 
     @Test
     public void should_return_restaurant_status_ClosingSoon() {
+        when(appContext.getString(R.string.status_closing_soon))
+                .thenReturn("Closing soon");
+
         List<Period> periodList = createPeriodMock();
         boolean isOpenNow = true;
         boolean isClosingSoon = Utils.isClosingSoon(periodList, 6, 1331);
         Period period = Utils.getCurrentPeriod(periodList, 6, 1331);
 
-        String status = Utils.restaurantStatus(isOpenNow, isClosingSoon, period);
+        String status = Utils.restaurantStatus(appContext, isOpenNow, isClosingSoon, period);
 
         assertNotNull(period);
         assertEquals("Closing soon", status);
@@ -156,12 +172,15 @@ public class UtilsTest {
 
     @Test
     public void should_return_restaurant_status_Open24_7() {
+        when(appContext.getString(R.string.open_24h))
+                .thenReturn("Open 24/7");
+
         boolean isOpenNow = true;
         boolean isClosingSoon = false;
         Period period = new Period();
         period.open = new DayTime(0, "0000");
 
-        String status = Utils.restaurantStatus(isOpenNow, isClosingSoon, period);
+        String status = Utils.restaurantStatus(appContext, isOpenNow, isClosingSoon, period);
 
         assertNotNull(period);
         assertEquals("Open 24/7", status);
@@ -169,6 +188,9 @@ public class UtilsTest {
 
     @Test
     public void should_return_restaurant_status_OpenUntil() {
+        when(appContext.getString(R.string.open_until))
+                .thenReturn("Open until ");
+
         List<Period> periodList = createPeriodMock();
         boolean isOpenNow = true;
         boolean isClosingSoon = false;
@@ -177,7 +199,7 @@ public class UtilsTest {
 //        period.close = "1430"
         Period period = periodList.get(0);
 
-        String status = Utils.restaurantStatus(isOpenNow, isClosingSoon, period, Locale.ENGLISH);
+        String status = Utils.restaurantStatus(appContext, isOpenNow, isClosingSoon, period, Locale.ENGLISH);
 
         assertNotNull(period);
         assertEquals("Open until 2.30pm", status);

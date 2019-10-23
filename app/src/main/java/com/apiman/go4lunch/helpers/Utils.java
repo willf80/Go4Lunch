@@ -172,7 +172,7 @@ public class Utils {
         return restaurantStatus(context, isOpenNow, isClosingSoon, period, Locale.getDefault());
     }
 
-    private static String restaurantStatus(Context context,
+    public static String restaurantStatus(Context context,
                                            boolean isOpenNow, boolean isClosingSoon, @Nullable Period period, Locale locale){
         if(!isOpenNow){
             return context.getString(R.string.status_closed);
