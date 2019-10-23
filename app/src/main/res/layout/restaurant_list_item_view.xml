@@ -38,7 +38,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
-        android:text="@string/restaurant_address"
+        android:text="@string/sample_restaurant_address"
         app:layout_constraintBottom_toTopOf="@+id/textView5"
         app:layout_constraintEnd_toStartOf="@+id/workmatesTextView"
         app:layout_constraintStart_toStartOf="parent"

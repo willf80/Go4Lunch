@@ -235,10 +235,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private void confirmSignOut() {
         new AlertDialog.Builder(this)
-                .setTitle("Sign out")
-                .setMessage("Do you want to sign out ?")
-                .setNegativeButton("No", null)
-                .setPositiveButton("Yes, Sign out",
+                .setTitle(R.string.sign_out)
+                .setMessage(R.string.confirm_sign_out)
+                .setNegativeButton(R.string.no, null)
+                .setPositiveButton(R.string.yes_sign_out,
                 (dialog, which) -> signOut())
                 .create()
                 .show();
@@ -287,7 +287,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void showNoBookingFound() {
-        Toast.makeText(this, "No booking found !", Toast.LENGTH_LONG).show();
+        Toast.makeText(this, getString(R.string.no_booking_found), Toast.LENGTH_LONG).show();
     }
 
     private void showRestaurantDetails(String placeId, String restaurantPhoto){
