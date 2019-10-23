@@ -20,7 +20,6 @@ import com.apiman.go4lunch.adapters.WorkmateJoiningAdapter;
 import com.apiman.go4lunch.fragments.ProgressDialogFragment;
 import com.apiman.go4lunch.fragments.RatingDialogFragment;
 import com.apiman.go4lunch.helpers.FireStoreUtils;
-import com.apiman.go4lunch.helpers.Utils;
 import com.apiman.go4lunch.models.Rating;
 import com.apiman.go4lunch.models.Restaurant;
 import com.apiman.go4lunch.models.Workmate;
@@ -81,7 +80,6 @@ public class RestaurantDetailsActivity extends BaseActivity implements RatingDia
 
     String mPlaceId;
     String mPhotoReference;
-    String mStatus;
     Restaurant mRestaurant;
     Disposable disposable;
 
@@ -98,7 +96,6 @@ public class RestaurantDetailsActivity extends BaseActivity implements RatingDia
 
         mPlaceId = getIntent().getStringExtra(FireStoreUtils.FIELD_PLACE_ID);
         mPhotoReference = getIntent().getStringExtra(FireStoreUtils.FIELD_PHOTO);
-        mStatus = getIntent().getStringExtra(FireStoreUtils.FIELD_STATUS);
 
         mDetailsViewModel = ViewModelProviders.of(this).get(RestaurantDetailsViewModel.class);
 
@@ -190,13 +187,19 @@ public class RestaurantDetailsActivity extends BaseActivity implements RatingDia
     }
 
     private void loadOnlineRestaurantDetails() {
+        ProgressDialogFragment dialogFragment = ProgressDialogFragment.newInstance();
+        dialogFragment.show(getSupportFragmentManager());
+
         disposable = RestaurantStreams
                 .getRestaurantDetailsExtractedFlowable(this, mPlaceId)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
+                .doOnError(throwable -> dialogFragment.dismiss())
                 .subscribe(restaurant -> {
                     mRestaurant = restaurant;
                     applyInfo();
+
+                    dialogFragment.dismiss();
                 });
     }
 
@@ -320,18 +323,12 @@ public class RestaurantDetailsActivity extends BaseActivity implements RatingDia
             return;
         }
 
-        switch (mStatus) {
-            case Utils
-                    .RESTAURANT_STATUS_CLOSING_SOON:
-                confirmClosingSoonBooking();
-                break;
-
-            case Utils.RESTAURANT_STATUS_CLOSED:
-                restaurantClosedInformation();
-                break;
-
-            default:
-                confirmBooking();
+        if(mRestaurant.isClosingSoon()) {
+            confirmClosingSoonBooking();
+        } else if(!mRestaurant.isOpenNow()) {
+            restaurantClosedInformation();
+        } else {
+            confirmBooking();
         }
     }
 

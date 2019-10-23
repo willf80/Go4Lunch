@@ -3,9 +3,11 @@ package com.apiman.go4lunch.services;
 import android.content.Context;
 
 import com.apiman.go4lunch.R;
+import com.apiman.go4lunch.helpers.Utils;
 import com.apiman.go4lunch.models.ApiDetailsResponse;
 import com.apiman.go4lunch.models.ApiDetailsResult;
 import com.apiman.go4lunch.models.ApiResponse;
+import com.apiman.go4lunch.models.Period;
 import com.apiman.go4lunch.models.Photo;
 import com.apiman.go4lunch.models.Restaurant;
 import com.google.android.gms.maps.model.LatLng;
@@ -15,6 +17,8 @@ import java.util.Locale;
 import java.util.Map;
 
 import io.reactivex.Flowable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 
 public class RestaurantStreams {
 
@@ -29,21 +33,10 @@ public class RestaurantStreams {
                 .getNearbyRestaurantsObservable(parameters);
     }
 
-
     public static Flowable<ApiDetailsResponse> getRestaurantDetailsFlowable(Context context, String placeId) {
-        return getRestaurantDetailsFlowable(context, placeId,
-                "name,vicinity,photo,opening_hours,international_phone_number,place_id,website");
-    }
-
-    private static Flowable<ApiDetailsResponse> getRestaurantBasicDetailsFlowable(Context context, String placeId) {
-        return getRestaurantDetailsFlowable(context, placeId,
-                "name,vicinity,photo,international_phone_number,place_id,website");
-    }
-
-    private static Flowable<ApiDetailsResponse> getRestaurantDetailsFlowable(Context context, String placeId, String fields) {
         Map<String, String> parameters = ApiClientConfig.getDefaultParameters(context);
         parameters.put("place_id", placeId);
-        parameters.put("fields", fields);
+        parameters.put("fields", "name,vicinity,photo,opening_hours,international_phone_number,place_id,website");
 
         return ApiClientConfig
                 .getHttpClient(context)
@@ -53,12 +46,14 @@ public class RestaurantStreams {
 
     public static Flowable<Restaurant> getRestaurantDetailsExtractedFlowable(Context context, String placeId) {
         return RestaurantStreams
-                .getRestaurantBasicDetailsFlowable(context, placeId)
-                .map(response -> fetchRestaurantInfo(response.getApiResult(), placeId));
+                .getRestaurantDetailsFlowable(context, placeId)
+                .map(response -> fetchRestaurantInfo(context, response.getApiResult(), placeId))
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.io());
     }
 
-    private static Restaurant fetchRestaurantInfo(ApiDetailsResult detailsResult, String placeId) {
-        Restaurant restaurant = new Restaurant();
+    private static Restaurant fetchRestaurantInfo(Context context, ApiDetailsResult detailsResult, String placeId) {
+        Restaurant restaurant = applyRestaurantDetails(context, new Restaurant(), detailsResult);
 
         String vicinity = detailsResult.getVicinity();
         if(vicinity != null) {
@@ -73,6 +68,28 @@ public class RestaurantStreams {
 
         restaurant.setPlaceId(placeId);
         restaurant.setName(detailsResult.getName());
+        return restaurant;
+    }
+
+    public static Restaurant applyRestaurantDetails(Context context, Restaurant restaurant, ApiDetailsResult detailsResult){
+        ApiDetailsResult.OpeningHour openingHour = detailsResult.getOpeningHour();
+
+        if (openingHour != null) {
+            List<Period> periodList = openingHour.periods;
+
+            int dayIndex = Utils.getDayOfWeek();
+            int currentTime = Utils.getCurrentTime();
+            boolean isOpenNow = openingHour.isOpenNow;
+            boolean isClosingSoon = Utils.isClosingSoon(periodList, dayIndex, currentTime);
+
+            Period period = Utils.getCurrentPeriod(periodList, dayIndex, currentTime);
+            String status = Utils.restaurantStatus(context, isOpenNow, isClosingSoon, period);
+
+            restaurant.setOpenNow(isOpenNow);
+            restaurant.setClosingSoon(isClosingSoon);
+            restaurant.setStatus(status);
+        }
+
         restaurant.setWebsite(detailsResult.getWebsite());
         restaurant.setPhoneNumber(detailsResult.getPhoneNumber());
 

@@ -18,9 +18,6 @@ import io.reactivex.Observable;
 
 public class Utils {
     private static final int earthRadius = 6_371;
-    public static final String RESTAURANT_STATUS_OPEN = "OPEN";
-    public static final String RESTAURANT_STATUS_CLOSING_SOON = "CLOSING_SOON";
-    public static final String RESTAURANT_STATUS_CLOSED = "CLOSED";
 
     /**
      * Source : http://villemin.gerard.free.fr/aGeograp/Distance.htm
@@ -175,8 +172,8 @@ public class Utils {
         return restaurantStatus(context, isOpenNow, isClosingSoon, period, Locale.getDefault());
     }
 
-    public static String restaurantStatus(Context context,
-            boolean isOpenNow, boolean isClosingSoon, @Nullable Period period, Locale locale){
+    private static String restaurantStatus(Context context,
+                                           boolean isOpenNow, boolean isClosingSoon, @Nullable Period period, Locale locale){
         if(!isOpenNow){
             return context.getString(R.string.status_closed);
         }

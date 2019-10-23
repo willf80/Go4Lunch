@@ -68,7 +68,7 @@ public class ListViewFragment extends BaseFragment implements RestaurantListAdap
 
     @Override
     public void onItemClicked(Restaurant restaurant) {
-        showRestaurantDetails(restaurant);
+        startDetailsActivity(restaurant);
     }
 
     @Override

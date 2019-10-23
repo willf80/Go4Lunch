@@ -87,7 +87,7 @@ public class MapsFragment extends BaseFragment implements OnMapReadyCallback {
     private void onInfoWindowClicked() {
         mMap.setOnInfoWindowClickListener(marker -> {
             if(mRestaurantSelected == null) return;
-            showRestaurantDetails(mRestaurantSelected);
+            startDetailsActivity(mRestaurantSelected);
         });
     }
 

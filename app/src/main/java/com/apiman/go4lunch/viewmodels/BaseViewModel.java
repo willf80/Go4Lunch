@@ -8,9 +8,7 @@ import androidx.lifecycle.ViewModel;
 
 import com.apiman.go4lunch.helpers.FireStoreUtils;
 import com.apiman.go4lunch.helpers.Utils;
-import com.apiman.go4lunch.models.ApiDetailsResult;
 import com.apiman.go4lunch.models.ApiResponse;
-import com.apiman.go4lunch.models.Period;
 import com.apiman.go4lunch.models.Restaurant;
 import com.apiman.go4lunch.models.SearchMode;
 import com.apiman.go4lunch.services.RestaurantStreams;
@@ -106,10 +104,10 @@ public class BaseViewModel extends ViewModel {
                 });
     }
 
-    public Flowable<Restaurant> updateRestaurantItemFlowable(Context context, Restaurant restaurant) {
+    private Flowable<Restaurant> updateRestaurantItemFlowable(Context context, Restaurant restaurant) {
         return RestaurantStreams
                 .getRestaurantDetailsFlowable(context, restaurant.getPlaceId())
-                .map(detailsResponse -> applyRestaurantDetails(context, restaurant, detailsResponse.getApiResult()))
+                .map(detailsResponse -> RestaurantStreams.applyRestaurantDetails(context, restaurant, detailsResponse.getApiResult()))
                 .map(restaurantWithDetails -> {
                     QuerySnapshot snapshot = Tasks.await(FireStoreUtils.getRestaurantRatingScore(restaurant.getPlaceId()).get());
                     Float rating = FireStoreUtils.averageRating(snapshot);
@@ -129,31 +127,6 @@ public class BaseViewModel extends ViewModel {
             .observeOn(AndroidSchedulers.mainThread())
             .doFinally(() -> mRestaurantsLiveData.setValue(mRestaurantList))
             .subscribe();
-    }
-
-    private Restaurant applyRestaurantDetails(Context context, Restaurant restaurant, ApiDetailsResult detailsResult){
-        ApiDetailsResult.OpeningHour openingHour = detailsResult.getOpeningHour();
-
-        if (openingHour != null) {
-            List<Period> periodList = openingHour.periods;
-
-            int dayIndex = Utils.getDayOfWeek();
-            int currentTime = Utils.getCurrentTime();
-            boolean isOpenNow = openingHour.isOpenNow;
-            boolean isClosingSoon = Utils.isClosingSoon(periodList, dayIndex, currentTime);
-
-            Period period = Utils.getCurrentPeriod(periodList, dayIndex, currentTime);
-            String status = Utils.restaurantStatus(context, isOpenNow, isClosingSoon, period);
-
-            restaurant.setOpenNow(isOpenNow);
-            restaurant.setClosingSoon(isClosingSoon);
-            restaurant.setStatus(status);
-        }
-
-        restaurant.setWebsite(detailsResult.getWebsite());
-        restaurant.setPhoneNumber(detailsResult.getPhoneNumber());
-
-        return restaurant;
     }
 
     private Restaurant updateRestaurantBookedItem(List<Restaurant> restaurants, List<DocumentSnapshot> documentBookedList) {
