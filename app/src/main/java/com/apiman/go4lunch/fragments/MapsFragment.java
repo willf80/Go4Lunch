@@ -2,6 +2,7 @@ package com.apiman.go4lunch.fragments;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,11 +24,12 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import java.util.List;
 
 public class MapsFragment extends BaseFragment implements OnMapReadyCallback {
+    private static final String TAG = "MapsFragment";
     private static final float DEFAULT_ZOOM = 15.0f;
 
     private GoogleMap mMap;
     private boolean mLocationPermissionGranted = false;
-    private LatLng mDefaultLocation = new LatLng(46.1313871,-2.4356672);
+    private LatLng mDefaultLocation = new LatLng(48.8555874,2.3890811);
 
     private Restaurant mRestaurantSelected;
 
@@ -56,6 +58,9 @@ public class MapsFragment extends BaseFragment implements OnMapReadyCallback {
         uiSettings.setAllGesturesEnabled(true);
         uiSettings.setZoomControlsEnabled(true);
 
+
+        mMap.setOnMapLoadedCallback(this::updateLatLngBounds);
+        mMap.setOnCameraIdleListener(this::updateLatLngBounds);
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mDefaultLocation, DEFAULT_ZOOM));
 
         mViewModel.getLocationPermissionState()
@@ -63,7 +68,6 @@ public class MapsFragment extends BaseFragment implements OnMapReadyCallback {
                 mLocationPermissionGranted = state;
                 updateLocationUI();
             });
-
 
         mViewModel.getLastKnowLocation()
             .observe(this, latLng -> {
@@ -75,6 +79,18 @@ public class MapsFragment extends BaseFragment implements OnMapReadyCallback {
 
         onMarkerClicked();
         onInfoWindowClicked();
+    }
+
+    private void updateLatLngBounds() {
+        mViewModel.setMapLatLngBounds(mMap
+                .getProjection()
+                .getVisibleRegion()
+                .latLngBounds);
+
+        Log.d(TAG, "Camera moved : " + mMap
+                .getProjection()
+                .getVisibleRegion()
+                .latLngBounds);
     }
 
     private void onMarkerClicked() {

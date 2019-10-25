@@ -1,6 +1,7 @@
 package com.apiman.go4lunch.viewmodels;
 
 import android.content.Context;
+import android.util.Log;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -13,10 +14,12 @@ import com.apiman.go4lunch.models.Restaurant;
 import com.apiman.go4lunch.models.SearchMode;
 import com.apiman.go4lunch.services.RestaurantStreams;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.tasks.Tasks;
 import com.google.android.libraries.places.api.model.AutocompletePrediction;
 import com.google.android.libraries.places.api.model.AutocompleteSessionToken;
 import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.api.model.RectangularBounds;
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
 import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -27,7 +30,6 @@ import java.util.List;
 import java.util.Objects;
 
 import io.reactivex.Flowable;
-import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
@@ -35,6 +37,8 @@ import io.reactivex.schedulers.Schedulers;
 import static com.apiman.go4lunch.helpers.FireStoreUtils.FIELD_PLACE_ID;
 
 public class BaseViewModel extends ViewModel {
+    private static final String TAG = "BaseViewModel";
+
     // Location permission state
     private MutableLiveData<Boolean> mLocationPermission;
 
@@ -46,8 +50,8 @@ public class BaseViewModel extends ViewModel {
 
     private LatLng lastLatLng;
     private List<Restaurant> mRestaurantList;
-    private List<Restaurant> mSearchRestaurantList;
 
+    private LatLngBounds mMapLatLngBounds;
     private SearchMode searchMode = SearchMode.RESTAURANTS;
     private Disposable mDisposable;
 
@@ -74,7 +78,7 @@ public class BaseViewModel extends ViewModel {
         loadRestaurants(context, lastLatLng);
     }
 
-    private int performDistance(LatLng currentPosition, LatLng restaurantPosition) {
+    private int calculateDistance(LatLng currentPosition, LatLng restaurantPosition) {
         return Utils.distanceInMeters(
                 currentPosition.latitude, currentPosition.longitude,
                 restaurantPosition.latitude, restaurantPosition.longitude);
@@ -89,7 +93,7 @@ public class BaseViewModel extends ViewModel {
                 .parallel()
                 .runOn(Schedulers.io())
                 .map(restaurant -> {
-                    int distance = performDistance(latLng,
+                    int distance = calculateDistance(latLng,
                             new LatLng(restaurant.getLatitude(), restaurant.getLongitude()));
                     restaurant.setDistance(distance);
                     return restaurant;
@@ -114,19 +118,39 @@ public class BaseViewModel extends ViewModel {
                     restaurantWithDetails.setRating(rating);
 
                     return restaurantWithDetails;
-                });
+                })
+                .doOnError(throwable -> {});
     }
 
-    private void getRestaurantsDetails(final Context context, List<Restaurant> restaurants) {
+    private Flowable<List<Restaurant>> getRestaurantsDetailsFlowable(final Context context, List<Restaurant> restaurants) {
         // Create iterable Flowable
-        Flowable.fromIterable(restaurants)
-            .parallel()
-            .runOn(Schedulers.io())
-            .flatMap(restaurant -> updateRestaurantItemFlowable(context, restaurant))
-            .sequential()
-            .observeOn(AndroidSchedulers.mainThread())
+        return Flowable.fromIterable(restaurants)
+                .parallel()
+                .runOn(Schedulers.io())
+                .flatMap(restaurant -> updateRestaurantItemFlowable(context, restaurant))
+                .map(restaurant -> {
+                    LatLng restaurantLatLng = new LatLng(restaurant.getLatitude(), restaurant.getLongitude());
+                    int distance = calculateDistance(lastLatLng, restaurantLatLng);
+                    restaurant.setDistance(distance);
+                    return restaurant;
+                })
+                .toSortedList((o1, o2) -> o1.getDistance() - o2.getDistance())
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
+    }
+
+    private void getRestaurantsDetails(final Context context) {
+        // Create iterable Flowable
+        getRestaurantsDetailsFlowable(context, mRestaurantList)
             .doFinally(() -> mRestaurantsLiveData.setValue(mRestaurantList))
             .subscribe();
+    }
+
+    private void getRestaurantsDetailsForSearch(final Context context, List<Restaurant> restaurants) {
+        // Create iterable Flowable
+        getRestaurantsDetailsFlowable(context, restaurants)
+                .doFinally(() -> mRestaurantsLiveData.setValue(restaurants))
+                .subscribe();
     }
 
     private Restaurant updateRestaurantBookedItem(List<Restaurant> restaurants, List<DocumentSnapshot> documentBookedList) {
@@ -163,55 +187,136 @@ public class BaseViewModel extends ViewModel {
 
     // Get Cloud FireStore booking places
     private void getTodayBooking(Context context) {
-        Flowable.just(mRestaurantList)
-                .flatMap(restaurants -> {
-                    QuerySnapshot query = FireStoreUtils.getTodayBookingAwait();
-                    return updateRestaurantsBookedInfoFlowable(restaurants, query.getDocuments());
-                })
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
+        getTodayBookingFlowable(mRestaurantList)
                 .doFinally(() -> {
                     mRestaurantsLiveData.setValue(mRestaurantList);
-                    getRestaurantsDetails(context, mRestaurantList);
+                    getRestaurantsDetails(context);
                 })
                 .subscribe();
     }
 
+    private Flowable<Restaurant> getTodayBookingFlowable(List<Restaurant> restaurants) {
+        return Flowable.just(restaurants)
+                .flatMap(restaurantList -> {
+                    QuerySnapshot query = FireStoreUtils.getTodayBookingAwait();
+                    return updateRestaurantsBookedInfoFlowable(restaurantList, query.getDocuments());
+                })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
+    }
+
     private FindAutocompletePredictionsRequest createRequest(String query) {
         AutocompleteSessionToken token = AutocompleteSessionToken.newInstance();
+        RectangularBounds bounds = RectangularBounds.newInstance(
+                mMapLatLngBounds.southwest,
+                mMapLatLngBounds.northeast);
+
         return FindAutocompletePredictionsRequest
                 .builder()
+                .setLocationBias(bounds)
                 .setCountry("fr")
                 .setSessionToken(token)
                 .setQuery(query)
                 .build();
     }
 
-    public void searchAutoComplete(PlacesClient placesClient, String query) {
-//        Log.e("BASE SEARCH -> ", query);
+    public void searchAutoComplete(Context context, PlacesClient placesClient, String query) {
         if(searchMode == SearchMode.WORKMATES) {
             return;
         }
 
         placesClient.findAutocompletePredictions(createRequest(query))
                 .addOnSuccessListener(response -> {
-                    mSearchRestaurantList = new ArrayList<>();
+                    List<String> placeIdList = new ArrayList<>();
                     for (AutocompletePrediction prediction : response.getAutocompletePredictions()) {
-//                        Log.e("BASE", prediction.getFullText(null) + " : " + prediction.getPlaceId());
+                        //Log.e("BASE", prediction.getFullText(null) + " : " + prediction.getPlaceId());
                         List<Place.Type> placesType = prediction.getPlaceTypes();
                         if(!placesType.contains(Place.Type.RESTAURANT)) continue;
 
-                        Restaurant restaurantFound = Observable.fromIterable(mRestaurantList)
-                                .filter(restaurant -> Objects.equals(restaurant.getPlaceId(), prediction.getPlaceId()))
-                                .blockingFirst(null);
-
-                        //Place place; place.
-                        if(restaurantFound != null) mSearchRestaurantList.add(restaurantFound);
+                        Log.e(TAG, prediction.getFullText(null) + " : " + prediction.getPlaceId());
+//                        if(placeIdList.size() <= 0)
+                        placeIdList.add(prediction.getPlaceId());
                     }
 
-                    mRestaurantsLiveData.setValue(mSearchRestaurantList);
+                    getDetailsOfPlaceId(context, placeIdList);
                 });
     }
+
+    private void getDetailsOfPlaceId(Context context, List<String> placeIds) {
+        mDisposable = Flowable.fromIterable(placeIds)
+                .parallel()
+                .runOn(Schedulers.io())
+                .flatMap(placeId -> RestaurantStreams.getRestaurantDetailsExtractedFlowable(context, placeId))
+                .map(restaurant -> {
+                    LatLng restaurantLatLng = new LatLng(restaurant.getLatitude(), restaurant.getLongitude());
+                    int distance = calculateDistance(lastLatLng, restaurantLatLng);
+                    restaurant.setDistance(distance);
+                    return restaurant;
+                })
+                .toSortedList((o1, o2) -> o1.getDistance() - o2.getDistance())
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnError(throwable -> Log.e(TAG, "Auto complete details error ", throwable))
+                .subscribe(restaurants -> {
+                    mRestaurantsLiveData.setValue(restaurants);
+
+                    getTodayBookingFlowable(restaurants)
+                            .doFinally(() -> getRestaurantsDetailsForSearch(context, restaurants))
+                            .subscribe();
+                });
+    }
+
+//    private void getDetailsOfPlaceIdWithoutPhoto(PlacesClient placesClient, List<String> placeIds) {
+//        mDisposable = Flowable.fromIterable(placeIds)
+//                .parallel()
+//                .runOn(Schedulers.io())
+//                .flatMap(s -> {
+//                    FetchPlaceResponse placeResponse = Tasks.await(placesClient.fetchPlace(getFetchPlaceRequest(s)));
+//
+//                    if(placeResponse == null) return Flowable.empty();
+//                    Place place = placeResponse.getPlace();
+//
+//                    Restaurant restaurant = new Restaurant();
+//                    restaurant.setPlaceId(place.getId());
+//                    restaurant.setName(place.getName());
+//                    restaurant.setAddress(place.getAddress());
+//
+//                    List<PhotoMetadata> photoMetadataList = place.getPhotoMetadatas();
+//                    if(photoMetadataList != null && photoMetadataList.size() > 0) {
+//                        PhotoMetadata photoMetadata = photoMetadataList.get(0);
+//                        Log.e(TAG, photoMetadata.getAttributions());
+//                        //FetchPhotoRequest.builder(photoMetadata).build(
+//
+//                    }
+//
+//                    LatLng latLng = place.getLatLng();
+//                    if(latLng != null) {
+//                        restaurant.setLatitude(latLng.latitude);
+//                        restaurant.setLongitude(latLng.longitude);
+//
+//                        int distance = calculateDistance(lastLatLng, latLng);
+//                        restaurant.setDistance(distance);
+//                    }
+//
+//                    return Flowable.just(restaurant);
+//                })
+//                .sequential()
+//                .toSortedList((o1, o2) -> o1.getDistance() - o2.getDistance())
+//                .subscribeOn(Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .doOnError(throwable -> Log.e(TAG, "Auto complete details error ", throwable))
+//                .subscribe(restaurants -> mRestaurantsLiveData.setValue(restaurants));
+//    }
+//    private FetchPlaceRequest getFetchPlaceRequest(String placeId) {
+//        List<Place.Field> placeFields = Arrays.asList(
+//                Place.Field.ID,
+//                Place.Field.NAME,
+//                Place.Field.LAT_LNG,
+//                Place.Field.ADDRESS,
+//                Place.Field.PHOTO_METADATAS);
+//        return  FetchPlaceRequest.newInstance(placeId, placeFields);
+//    }
+
     //---- END
 
     public LiveData<LatLng> getLastKnowLocation() {
@@ -248,5 +353,9 @@ public class BaseViewModel extends ViewModel {
 
     public void setSearchMode(SearchMode searchMode) {
         this.searchMode = searchMode;
+    }
+
+    public void setMapLatLngBounds(LatLngBounds mapLatLngBounds) {
+        this.mMapLatLngBounds = mapLatLngBounds;
     }
 }

@@ -3,7 +3,6 @@ package com.apiman.go4lunch.models;
 import java.util.Locale;
 
 public class Restaurant {
-    private String id;
     private String name;
     private String reference;
     private String placeId;
@@ -33,14 +32,6 @@ public class Restaurant {
     }
 
     //---------- Getters and setters -------------
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
     public String getName() {
         return name;
     }

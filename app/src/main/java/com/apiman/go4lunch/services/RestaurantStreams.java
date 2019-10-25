@@ -7,6 +7,7 @@ import com.apiman.go4lunch.helpers.Utils;
 import com.apiman.go4lunch.models.ApiDetailsResponse;
 import com.apiman.go4lunch.models.ApiDetailsResult;
 import com.apiman.go4lunch.models.ApiResponse;
+import com.apiman.go4lunch.models.Geometry;
 import com.apiman.go4lunch.models.Period;
 import com.apiman.go4lunch.models.Photo;
 import com.apiman.go4lunch.models.Restaurant;
@@ -36,7 +37,7 @@ public class RestaurantStreams {
     public static Flowable<ApiDetailsResponse> getRestaurantDetailsFlowable(Context context, String placeId) {
         Map<String, String> parameters = ApiClientConfig.getDefaultParameters(context);
         parameters.put("place_id", placeId);
-        parameters.put("fields", "name,vicinity,photo,opening_hours,international_phone_number,place_id,website");
+        parameters.put("fields", "name,vicinity,geometry,photo,opening_hours,international_phone_number,place_id,website");
 
         return ApiClientConfig
                 .getHttpClient(context)
@@ -64,6 +65,12 @@ public class RestaurantStreams {
         List<Photo> photos = detailsResult.getPhotos();
         if(photos != null && photos.size() > 0) {
             restaurant.setPhotoReference(photos.get(0).reference);
+        }
+
+        Geometry geometry = detailsResult.getGeometry();
+        if(geometry != null && geometry.location != null) {
+            restaurant.setLatitude(geometry.location.lat);
+            restaurant.setLongitude(geometry.location.lng);
         }
 
         restaurant.setPlaceId(placeId);

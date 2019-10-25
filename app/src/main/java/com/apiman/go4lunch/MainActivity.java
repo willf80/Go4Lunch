@@ -113,7 +113,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                mBaseViewModel.searchAutoComplete(placesClient, newText);
+                mBaseViewModel.searchAutoComplete(MainActivity.this, placesClient, newText);
                 return false;
             }
         });

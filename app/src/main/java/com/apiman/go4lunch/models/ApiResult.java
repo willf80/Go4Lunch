@@ -52,18 +52,8 @@ public class ApiResult {
         return photos;
     }
 
-    class Geometry {
-        Location location;
-    }
-
-    class Location {
-        double lat;
-        double lng;
-    }
-
     Restaurant toRestaurant() {
         Restaurant restaurant = new Restaurant();
-        restaurant.setId(id);
         restaurant.setName(name);
         restaurant.setPlaceId(placeId);
 

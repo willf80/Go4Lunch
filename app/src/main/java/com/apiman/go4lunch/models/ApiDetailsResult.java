@@ -17,6 +17,7 @@ public class ApiDetailsResult {
     private String website;
     private String name;
     private String vicinity;
+    private Geometry geometry;
 
     private List<Photo> photos;
 
@@ -48,6 +49,9 @@ public class ApiDetailsResult {
         return openingHour;
     }
 
+    public Geometry getGeometry() {
+        return geometry;
+    }
 
     public static class OpeningHour {
         @SerializedName("open_now")
