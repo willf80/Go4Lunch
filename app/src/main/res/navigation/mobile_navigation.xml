@@ -3,23 +3,23 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@+id/navigation_home">
+    app:startDestination="@+id/navigation_maps">
 
     <fragment
-        android:id="@+id/navigation_home"
-        android:name="com.apiman.go4lunch.ui.home.HomeFragment"
-        android:label="@string/title_home"
-        tools:layout="@layout/fragment_home" />
+        android:id="@+id/navigation_maps"
+        android:name="com.apiman.go4lunch.fragments.MapsFragment"
+        android:label="@string/title_maps"
+        tools:layout="@layout/fragment_maps" />
 
     <fragment
-        android:id="@+id/navigation_dashboard"
-        android:name="com.apiman.go4lunch.ui.dashboard.DashboardFragment"
-        android:label="@string/title_dashboard"
-        tools:layout="@layout/fragment_dashboard" />
+        android:id="@+id/navigation_list_view"
+        android:name="com.apiman.go4lunch.fragments.ListViewFragment"
+        android:label="@string/title_list_view"
+        tools:layout="@layout/fragment_list_view" />
 
     <fragment
-        android:id="@+id/navigation_notifications"
-        android:name="com.apiman.go4lunch.ui.notifications.NotificationsFragment"
-        android:label="@string/title_notifications"
-        tools:layout="@layout/fragment_notifications" />
+        android:id="@+id/navigation_workmates"
+        android:name="com.apiman.go4lunch.fragments.WorkmatesFragment"
+        android:label="@string/title_workmates_available"
+        tools:layout="@layout/fragment_workmates" />
 </navigation>

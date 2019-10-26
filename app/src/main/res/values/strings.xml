@@ -1,6 +1,105 @@
 <resources>
     <string name="app_name">Go4Lunch</string>
-    <string name="title_home">Home</string>
-    <string name="title_dashboard">Dashboard</string>
-    <string name="title_notifications">Notifications</string>
+    <string name="title_maps">Map view</string>
+    <string name="title_list_view">List View</string>
+    <string name="title_workmates">Workmates</string>
+    <string name="title_settings">Settings</string>
+    <string name="title_new_account">New account</string>
+    <string name="title_workmates_available">Available workmates</string>
+    <string name="search">Search</string>
+
+    <string name="menu_action_your_lunch">YOUR LUNCH</string>
+    <string name="menu_action_settings">SETTINGS</string>
+    <string name="menu_action_logout">LOGOUT</string>
+
+    <string name="search_restaurants">Search restaurants</string>
+    <string name="search_workmates">Search workmates</string>
+    <string name="title_activity_maps" translatable="false">Map</string>
+    <string name="title_activity_restaurant_details">Restaurant details</string>
+    <string name="action_settings">Settings</string>
+    <string name="sign_in_with_facebook">Sign in with Facebook</string>
+    <string name="sign_in_with_google">Sign in with Google</string>
+    <string name="logo_subtitle">Find a nice restaurant and invite your co-workers for lunch!</string>
+
+    <!-- Used in NavigationDrawer -->
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="auth_failed_default_message">Authentication failed</string>
+    <string name="operation_failed">Operation failed, please retry later</string>
+    <string name="api_base_url" translatable="false">https://maps.googleapis.com/</string>
+    <string name="place_photo_url" translatable="false">"https://maps.googleapis.com/maps/api/place/photo?maxwidth=%d&amp;photoreference=%s&amp;key=%s"</string>
+    <string name="p_radius" translatable="false">1000</string>
+    <string name="p_type_restaurant" translatable="false">restaurant</string>
+    <string name="p_type_distance" translatable="false">distance</string>
+    <string name="loading_text">Loading, please wait…</string>
+
+    <string name="warning_select_number_of_star">Please select the number of stars before validation</string>
+    <string name="sample_restaurant_name" translatable="false">Le Zinc</string>
+    <string name="sample_restaurant_address" translatable="false">12 rue du Faubourg Poissonnière</string>
+    <string name="call">Call</string>
+    <string name="like">Like</string>
+    <string name="website">Website</string>
+    <string name="restaurant_booked_success">Restaurant booked successfully!</string>
+    <string name="default_notification_channel_id" translatable="false">default_channel</string>
+    <string name="default_notification_channel_name" translatable="false">default channel</string>
+    <string name="notification_title" translatable="false">@string/app_name</string>
+    <string name="notification_disable_help_text">You will no longer receive notifications</string>
+    <string name="notification_is_enable">Notification is enable</string>
+    <string name="notification_is_disable">Notification is disable</string>
+    <string name="username" translatable="false">Email</string>
+    <string name="password">Password</string>
+    <string name="login">Login</string>
+    <string name="or">Or login with</string>
+    <string name="create_new_account">Create new account</string>
+    <string name="full_name">Full name</string>
+    <string name="password_bis">Repeat your password</string>
+    <string name="validate">Validate</string>
+    <string name="minimum_characters_required">The password must be at least 6 characters.</string>
+    <string name="create_new_account_instruction">Please fill the below form to create your account. All fields are mandatory.</string>
+    <string name="invalid_username_or_password">The password is invalid or the user does not have a password</string>
+    <string name="email_required_to_login">Email is required to login</string>
+    <string name="password_required_to_login">Password is required to login</string>
+    <string name="connected">Connected</string>
+    <string name="full_name_required">Your full name is required</string>
+    <string name="email_is_required">Your email is required</string>
+    <string name="password_is_required">Password is required</string>
+    <string name="not_same_password">Password is not the same.</string>
+    <string name="account_created_succcessfully">Your account are created successfully !</string>
+    <string name="email_already_used">The email address is already in use by another account</string>
+    <string name="rating_saved">Thanks for rating this restaurant</string>
+    <string name="has_not_decided_yet">%s hasn\'t decided yet</string>
+    <string name="is_eating_at_restaurant">%s is eating at (%s) restaurant</string>
+    <string name="workmate_is_joining">%s is joining!</string>
+    <string name="notification_part1">"It's time to go eat!\nYour restaurant [%s] at [%s] wait you.\n"</string>
+    <string name="notification_part2">Your workmates will be present: [%s]</string>
+    <string name="status_closed">Closed</string>
+    <string name="open_24h">Open 24/7</string>
+    <string name="open_until">"Open until "</string>
+    <string name="information">Information</string>
+    <string name="message_restaurant_is_closed">This restaurant is closed. Please try to book another one.</string>
+    <string name="ok" translatable="false">OK</string>
+    <string name="no">No</string>
+    <string name="yes_remove_it">Yes, remove it</string>
+    <string name="yes_i_want">Yes, I want</string>
+    <string name="restaurant_is_closing_soon">This restaurant is closing soon. Do you want to book in this restaurant despite ?</string>
+    <string name="booking_confirmation">Do you want to book in this restaurant?</string>
+    <string name="sample_name" translatable="false">Falone Kouadio</string>
+    <string name="sample_email" translatable="false">willyfkouadio@gmail.com</string>
+    <string name="sample_notification_title" translatable="false">Notification</string>
+    <string name="please_rating_this_restaurant">Rate this restaurant</string>
+    <string name="comment">Comment</string>
+    <string name="cancel">Cancel</string>
+    <string name="total_workmates" translatable="false">(0)</string>
+    <string name="sample_restaurant_status" translatable="false">Open until 7pm</string>
+    <string name="sample_distance_120m" translatable="false">120m</string>
+    <string name="sample_falone_is_eating_ivorian_le_zinc" translatable="false">Falone is eating ivorian (Le Zinc)</string>
+    <string name="new_account_creation_failed">New account creation are failed. Please retry later.</string>
+    <string name="notification_enable_help_text">You will receive a notification every day at 12PM if you made a reservation in the day</string>
+    <string name="remove_booking_confirmation">Do you want to cancel your booking ?</string>
+    <string name="status_closing_soon">Closing soon</string>
+    <string name="no_booking_found">No booking found !</string>
+    <string name="sign_out">Sign out</string>
+    <string name="confirm_sign_out">Do you want to sign out ?</string>
+    <string name="yes_sign_out">Yes, Sign out</string>
 </resources>
