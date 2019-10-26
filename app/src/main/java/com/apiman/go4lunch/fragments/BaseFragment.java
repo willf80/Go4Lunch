@@ -27,7 +27,12 @@ import com.karumi.dexter.listener.PermissionGrantedResponse;
 import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.single.PermissionListener;
 
+import java.util.List;
 import java.util.Objects;
+
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 
 import static com.apiman.go4lunch.helpers.FireStoreUtils.FIELD_PHOTO;
 import static com.apiman.go4lunch.helpers.FireStoreUtils.FIELD_PLACE_ID;
@@ -55,7 +60,6 @@ public abstract class BaseFragment extends Fragment {
         observers();
 
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(mActivity);
-
         getLastLocation();
     }
 
@@ -81,9 +85,7 @@ public abstract class BaseFragment extends Fragment {
                 }
 
                 @Override
-                public void onPermissionRationaleShouldBeShown(PermissionRequest permission, PermissionToken token) {
-
-                }
+                public void onPermissionRationaleShouldBeShown(PermissionRequest permission, PermissionToken token) { }
             })
             .check();
     }
@@ -100,8 +102,6 @@ public abstract class BaseFragment extends Fragment {
             }
         });
     }
-
-    abstract void updateRating(String placeId, float rating);
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -135,6 +135,33 @@ public abstract class BaseFragment extends Fragment {
         startActivityForResult(intent, BOOKING_REQUEST_CODE);
     }
 
-    abstract void refreshData();
+    /**
+     * Called after user rating a restaurant
+     * @param placeId Place ID
+     * @param rating rating average
+     */
+    private void updateRating(String placeId, float rating) {
+        List<Restaurant> restaurantList = mViewModel.getRestaurantsLiveData().getValue();
+        if(restaurantList == null) return;
+
+        Observable.fromIterable(restaurantList)
+                .filter(restaurant -> Objects.equals(restaurant.getPlaceId(), placeId))
+                .firstElement()
+                .map(restaurant -> {
+                    restaurant.setRating(rating);
+                    return restaurant;
+                })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .doFinally(() -> mViewModel.setRestaurants(restaurantList))
+                .subscribe();
+    }
+
+    /**
+     * Called to refresh all data
+     */
+    private void refreshData() {
+        mViewModel.refreshData(getContext());
+    }
 
 }

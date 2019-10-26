@@ -2,7 +2,6 @@ package com.apiman.go4lunch.fragments;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,7 +23,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import java.util.List;
 
 public class MapsFragment extends BaseFragment implements OnMapReadyCallback {
-    private static final String TAG = "MapsFragment";
+//    private static final String TAG = "MapsFragment";
     private static final float DEFAULT_ZOOM = 15.0f;
 
     private GoogleMap mMap;
@@ -33,15 +32,13 @@ public class MapsFragment extends BaseFragment implements OnMapReadyCallback {
 
     private Restaurant mRestaurantSelected;
 
-    @Override
-    void updateRating(String placeId, float rating) {}
-
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
 
         View root = inflater.inflate(R.layout.fragment_maps, container, false);
         SupportMapFragment mapFragment =
                 (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
+
         if(mapFragment != null) {
             mapFragment.getMapAsync(this);
         }
@@ -58,39 +55,27 @@ public class MapsFragment extends BaseFragment implements OnMapReadyCallback {
         uiSettings.setAllGesturesEnabled(true);
         uiSettings.setZoomControlsEnabled(true);
 
-
         mMap.setOnMapLoadedCallback(this::updateLatLngBounds);
         mMap.setOnCameraIdleListener(this::updateLatLngBounds);
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mDefaultLocation, DEFAULT_ZOOM));
 
-        mViewModel.getLocationPermissionState()
-            .observe(this, state -> {
-                mLocationPermissionGranted = state;
-                updateLocationUI();
-            });
+        mViewModel.getLocationPermissionState().observe(this, state -> {
+            mLocationPermissionGranted = state;
+            updateLocationUI();
+        });
 
-        mViewModel.getLastKnowLocation()
-            .observe(this, latLng -> {
-                if(latLng == null) return;
-
-                zoomToLocation(latLng);
-                getRestaurants(getContext(), latLng);
-            });
+        mViewModel.getLastKnowLocation().observe(this, latLng -> {
+            if(latLng == null) return;
+            zoomToLocation(latLng);
+            getRestaurants(getContext(), latLng);
+        });
 
         onMarkerClicked();
         onInfoWindowClicked();
     }
 
     private void updateLatLngBounds() {
-        mViewModel.setMapLatLngBounds(mMap
-                .getProjection()
-                .getVisibleRegion()
-                .latLngBounds);
-
-        Log.d(TAG, "Camera moved : " + mMap
-                .getProjection()
-                .getVisibleRegion()
-                .latLngBounds);
+        mViewModel.setMapLatLngBounds(mMap.getProjection().getVisibleRegion().latLngBounds);
     }
 
     private void onMarkerClicked() {
@@ -108,8 +93,7 @@ public class MapsFragment extends BaseFragment implements OnMapReadyCallback {
     }
 
     private void getRestaurants(Context context, LatLng latLng) {
-        mViewModel.getRestaurantList(context, latLng)
-                .observe(this, this::drawMarker);
+        mViewModel.getRestaurantList(context, latLng).observe(this, this::drawMarker);
     }
 
     private void zoomToLocation(LatLng latLng) {
@@ -126,9 +110,9 @@ public class MapsFragment extends BaseFragment implements OnMapReadyCallback {
                     .title(restaurant.getName())
                     .position(new LatLng(restaurant.getLatitude(), restaurant.getLongitude()));
 
-            if(restaurant.isBooked()) {
+            if (restaurant.isBooked()) {
                 markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-            }else{
+            } else {
                 markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
             }
 
@@ -148,10 +132,5 @@ public class MapsFragment extends BaseFragment implements OnMapReadyCallback {
             mMap.getUiSettings().setMyLocationButtonEnabled(false);
             grantLocationPermission();
         }
-    }
-
-    @Override
-    void refreshData() {
-        mViewModel.refreshData(getContext());
     }
 }

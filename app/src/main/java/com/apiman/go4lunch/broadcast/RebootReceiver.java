@@ -9,10 +9,11 @@ import com.apiman.go4lunch.helpers.NotificationHelper;
 import com.apiman.go4lunch.helpers.SettingsHelper;
 
 public class RebootReceiver extends BroadcastReceiver {
+    private static final String TAG = "RebootReceiver";
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.i("RebootReceiver", "Notifications alarm started");
+        Log.i(TAG, "Notifications alarm started");
 
         if(SettingsHelper.isNotificationEnabled(context)) {
             NotificationHelper notificationHelper = new NotificationHelper(context);

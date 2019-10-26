@@ -27,7 +27,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
 public class AppNotificationReceiver extends BroadcastReceiver {
-
+    private static final String TAG = "AppNotificationReceiver";
 
     /**
      * Create and show a simple notification containing the received message.
@@ -70,7 +70,7 @@ public class AppNotificationReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.i("AppNotificationReceiver", "Notifications alarm received");
+        Log.i(TAG, "Notifications alarm received");
         getNotificationData(context);
     }
 
@@ -85,10 +85,7 @@ public class AppNotificationReceiver extends BroadcastReceiver {
                     return s;
                 })
                 .map(stringBuilder -> {
-                    if(stringBuilder.length() > 1){
-                        stringBuilder = stringBuilder.deleteCharAt(stringBuilder.length() - 2);
-                    }
-
+                    if(stringBuilder.length() > 1) stringBuilder = stringBuilder.deleteCharAt(stringBuilder.length() - 2);
                     return stringBuilder.toString().trim();
                 })
                 .toObservable();
@@ -119,7 +116,7 @@ public class AppNotificationReceiver extends BroadcastReceiver {
             });
     }
 
-    private void    getWorkmatesAndBuildNotificationData(Context context, Booking userBooking, String userId) {
+    private void getWorkmatesAndBuildNotificationData(Context context, Booking userBooking, String userId) {
         final NotificationData notificationData = new NotificationData();
 
         Observable.just(userBooking)
