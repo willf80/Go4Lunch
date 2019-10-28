@@ -61,6 +61,8 @@ public class BaseViewModel extends ViewModel {
         mLastKnowLocation = new MutableLiveData<>();
         mRestaurantsLiveData = new MutableLiveData<>();
         mRestaurantList = new ArrayList<>();
+
+        mLocationPermission.setValue(false);
     }
 
     public LiveData<List<Restaurant>> getRestaurantList(Context context, LatLng latLng) {
@@ -174,7 +176,7 @@ public class BaseViewModel extends ViewModel {
                 .subscribe();
     }
 
-    private Restaurant updateRestaurantBookedItem(List<Restaurant> restaurants, List<DocumentSnapshot> documentBookedList) {
+    private Flowable<Restaurant> updateRestaurantBookedItem(List<Restaurant> restaurants, List<DocumentSnapshot> documentBookedList) {
         if(documentBookedList.size() <= 0) return null;
 
         DocumentSnapshot doc = documentBookedList.get(0);
@@ -182,13 +184,13 @@ public class BaseViewModel extends ViewModel {
 
         Restaurant restaurantItem = Flowable.fromIterable(restaurants)
                 .filter(restaurantFilter -> Objects.equals(restaurantFilter.getPlaceId(), key))
-                .blockingFirst();
+                .blockingFirst(null);
 
-        if(restaurantItem == null) return null;
+        if(restaurantItem == null) return Flowable.empty();
 
         restaurantItem.setTotalWorkmates(documentBookedList.size());
         restaurantItem.setBooked(!documentBookedList.isEmpty());
-        return restaurantItem;
+        return Flowable.just(restaurantItem);
     }
 
     private Flowable<Restaurant> updateRestaurantsBookedInfoFlowable(List<Restaurant> restaurants, List<DocumentSnapshot> allBooking) {
@@ -197,7 +199,7 @@ public class BaseViewModel extends ViewModel {
                 .flatMapSingle(Flowable::toList)
                 .parallel()
                 .runOn(Schedulers.io())
-                .map(documentSnapshots -> updateRestaurantBookedItem(restaurants, documentSnapshots))
+                .flatMap(documentSnapshots -> updateRestaurantBookedItem(restaurants, documentSnapshots))
                 .sequential()
                 .doOnError(throwable -> {});
     }
