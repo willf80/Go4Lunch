@@ -51,7 +51,7 @@ import butterknife.OnClick;
  */
 public class LoginActivity extends AppCompatActivity {
     private static final int RC_SIGN_IN = 9001;
-    private static final int RC_CREATE_ACCOUNT = 70000;
+    private static final int RC_CREATE_ACCOUNT = 2000;
     private static final String TAG = "LoginActivity";
 
     private static final List<String> facebookPermission = Arrays.asList("public_profile", "email");
