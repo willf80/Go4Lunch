@@ -101,17 +101,12 @@ public class FireStoreUtils {
             displayName = firebaseUser.getEmail();
         }
 
-        return new Workmate(
-                firebaseUser.getUid(),
-                displayName,
-                firebaseUser.getEmail(),
-                url,
-                new Date());
+        return new Workmate(firebaseUser.getUid(), displayName,
+                firebaseUser.getEmail(), url, new Date());
     }
 
     public static @NonNull Task<DocumentSnapshot> getWorkmateBookOfDay(String workmateId) {
-        return getTodayBookingCollection().document(workmateId)
-                .get();
+        return getTodayBookingCollection().document(workmateId).get();
     }
 
     public static QuerySnapshot getTodayBookingAwait() throws ExecutionException, InterruptedException {
@@ -124,9 +119,7 @@ public class FireStoreUtils {
     }
 
     public static Task<Void> saveRating(Rating rating) {
-        return getRestaurantRatingScore(rating.placeId)
-                .document(rating.userId)
-                .set(rating);
+        return getRestaurantRatingScore(rating.placeId).document(rating.userId).set(rating);
     }
 
     public static Float averageRating(QuerySnapshot querySnapshot) {

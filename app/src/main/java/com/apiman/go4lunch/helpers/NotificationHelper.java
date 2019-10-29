@@ -38,7 +38,7 @@ public class NotificationHelper {
         alarmManager.setRepeating(
                 AlarmManager.RTC_WAKEUP,
                 getTriggersMillis(),
-                AlarmManager.INTERVAL_DAY/*/1000 * 30*/,
+                AlarmManager.INTERVAL_DAY/*/1000 * 30/**/,
                 mAlarmPendingIntent);
 
         SettingsHelper.saveAlarmStatus(context, true);

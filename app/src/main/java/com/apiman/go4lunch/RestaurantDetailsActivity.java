@@ -118,18 +118,18 @@ public class RestaurantDetailsActivity extends BaseActivity implements RatingDia
 
     private void restaurantSuccessObserver() {
         mDetailsViewModel
-                .updatedListener()
-                .observe(this, s -> {
-                            mDetailsViewModel.getWorkmatesOfRestaurant(mPlaceId);
-                            mDetailsViewModel.checkIfRestaurantIsBookedByCurrentUser(mPlaceId);
-                            setResult(BOOKED_RESULT_CODE);
+            .updatedListener()
+            .observe(this, s -> {
+                    mDetailsViewModel.getWorkmatesOfRestaurant(mPlaceId);
+                    mDetailsViewModel.checkIfRestaurantIsBookedByCurrentUser(mPlaceId);
+                    setResult(BOOKED_RESULT_CODE);
 
-                            Toast.makeText(
-                                    RestaurantDetailsActivity.this,
-                                    getString(R.string.restaurant_booked_success),
-                                    Toast.LENGTH_SHORT).show();
-                        }
-                );
+                    Toast.makeText(
+                            RestaurantDetailsActivity.this,
+                            getString(R.string.restaurant_booked_success),
+                            Toast.LENGTH_SHORT).show();
+                }
+            );
     }
 
     private void restaurantDetailsErrorObserver() {

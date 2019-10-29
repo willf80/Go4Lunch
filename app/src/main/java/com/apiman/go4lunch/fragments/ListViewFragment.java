@@ -17,11 +17,6 @@ import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-
-import io.reactivex.Observable;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.schedulers.Schedulers;
 
 public class ListViewFragment extends BaseFragment implements RestaurantListAdapter.OnDispatchListener {
     private RestaurantListAdapter mRestaurantListAdapter;
@@ -71,23 +66,4 @@ public class ListViewFragment extends BaseFragment implements RestaurantListAdap
         startDetailsActivity(restaurant);
     }
 
-    @Override
-    void refreshData() {
-        mViewModel.refreshData(getContext());
-    }
-
-    @Override
-    protected void updateRating(String placeId, float rating) {
-        Observable.fromIterable(mRestaurantList)
-                .filter(restaurant -> Objects.equals(restaurant.getPlaceId(), placeId))
-                .firstElement()
-                .map(restaurant -> {
-                    restaurant.setRating(rating);
-                    return restaurant;
-                })
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .doFinally(() -> mRestaurantListAdapter.setRestaurants(mRestaurantList))
-                .subscribe();
-    }
 }

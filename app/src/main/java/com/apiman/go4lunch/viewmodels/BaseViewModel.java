@@ -38,6 +38,7 @@ import static com.apiman.go4lunch.helpers.FireStoreUtils.FIELD_PLACE_ID;
 
 public class BaseViewModel extends ViewModel {
     private static final String TAG = "BaseViewModel";
+    private static final String SEARCH_COUNTRY = "fr";
 
     // Location permission state
     private MutableLiveData<Boolean> mLocationPermission;
@@ -57,14 +58,13 @@ public class BaseViewModel extends ViewModel {
 
     public BaseViewModel() {
         mLocationPermission = new MutableLiveData<>();
-        mLocationPermission.setValue(false);
-
         mLastKnowLocation = new MutableLiveData<>();
         mRestaurantsLiveData = new MutableLiveData<>();
         mRestaurantList = new ArrayList<>();
+
+        mLocationPermission.setValue(false);
     }
 
-    //---- Start Restaurants
     public LiveData<List<Restaurant>> getRestaurantList(Context context, LatLng latLng) {
         if(lastLatLng == null) {
             lastLatLng = latLng;
@@ -74,8 +74,27 @@ public class BaseViewModel extends ViewModel {
     }
 
     public void refreshData(Context context) {
-        mRestaurantsLiveData.setValue(new ArrayList<>());
         loadRestaurants(context, lastLatLng);
+    }
+
+    public void searchAutoComplete(Context context, PlacesClient placesClient, String query) {
+        if(searchMode == SearchMode.WORKMATES) return;
+
+        placesClient.findAutocompletePredictions(createRequest(query))
+                .addOnSuccessListener(response -> {
+                    List<String> placeIdList = new ArrayList<>();
+                    for (AutocompletePrediction prediction : response.getAutocompletePredictions()) {
+                        List<Place.Type> placesType = prediction.getPlaceTypes();
+                        if(!placesType.contains(Place.Type.RESTAURANT)) continue;
+                        placeIdList.add(prediction.getPlaceId());
+                    }
+
+                    getDetailsOfPlaceId(context, placeIdList);
+                });
+    }
+
+    public void closeSearchMode() {
+        mRestaurantsLiveData.setValue(mRestaurantList);
     }
 
     private int calculateDistance(LatLng currentPosition, LatLng restaurantPosition) {
@@ -98,8 +117,7 @@ public class BaseViewModel extends ViewModel {
                     restaurant.setDistance(distance);
                     return restaurant;
                 })
-                .sorted((o1, o2) -> (o1.getDistance() - o2.getDistance()))
-                .toList()
+                .toSortedList((o1, o2) -> (o1.getDistance() - o2.getDistance()))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(restaurants -> {
@@ -135,6 +153,7 @@ public class BaseViewModel extends ViewModel {
                     return restaurant;
                 })
                 .toSortedList((o1, o2) -> o1.getDistance() - o2.getDistance())
+                .doOnError(throwable -> Log.e(TAG, "Get restaurant details error", throwable))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());
     }
@@ -153,26 +172,21 @@ public class BaseViewModel extends ViewModel {
                 .subscribe();
     }
 
-    private Restaurant updateRestaurantBookedItem(List<Restaurant> restaurants, List<DocumentSnapshot> documentBookedList) {
-        if(documentBookedList.size() <= 0) {
-            return null;
-        }
+    private Flowable<Restaurant> updateRestaurantBookedItem(List<Restaurant> restaurants, List<DocumentSnapshot> documentBookedList) {
+        if(documentBookedList.size() <= 0) return null;
 
         DocumentSnapshot doc = documentBookedList.get(0);
         String key = doc.get(FIELD_PLACE_ID, String.class);
 
         Restaurant restaurantItem = Flowable.fromIterable(restaurants)
                 .filter(restaurantFilter -> Objects.equals(restaurantFilter.getPlaceId(), key))
-                .blockingFirst();
+                .blockingFirst(null);
 
-        if(restaurantItem == null) {
-            return null;
-        }
+        if(restaurantItem == null) return Flowable.empty();
 
         restaurantItem.setTotalWorkmates(documentBookedList.size());
         restaurantItem.setBooked(!documentBookedList.isEmpty());
-
-        return restaurantItem;
+        return Flowable.just(restaurantItem);
     }
 
     private Flowable<Restaurant> updateRestaurantsBookedInfoFlowable(List<Restaurant> restaurants, List<DocumentSnapshot> allBooking) {
@@ -181,8 +195,9 @@ public class BaseViewModel extends ViewModel {
                 .flatMapSingle(Flowable::toList)
                 .parallel()
                 .runOn(Schedulers.io())
-                .map(documentSnapshots -> updateRestaurantBookedItem(restaurants, documentSnapshots))
-                .sequential();
+                .flatMap(documentSnapshots -> updateRestaurantBookedItem(restaurants, documentSnapshots))
+                .sequential()
+                .doOnError(throwable -> {});
     }
 
     // Get Cloud FireStore booking places
@@ -207,39 +222,15 @@ public class BaseViewModel extends ViewModel {
 
     private FindAutocompletePredictionsRequest createRequest(String query) {
         AutocompleteSessionToken token = AutocompleteSessionToken.newInstance();
-        RectangularBounds bounds = RectangularBounds.newInstance(
-                mMapLatLngBounds.southwest,
-                mMapLatLngBounds.northeast);
+        RectangularBounds bounds =
+            RectangularBounds.newInstance(mMapLatLngBounds.southwest, mMapLatLngBounds.northeast);
 
-        return FindAutocompletePredictionsRequest
-                .builder()
+        return FindAutocompletePredictionsRequest.builder()
                 .setLocationBias(bounds)
-                .setCountry("fr")
+                .setCountry(SEARCH_COUNTRY)
                 .setSessionToken(token)
                 .setQuery(query)
                 .build();
-    }
-
-    public void searchAutoComplete(Context context, PlacesClient placesClient, String query) {
-        if(searchMode == SearchMode.WORKMATES) {
-            return;
-        }
-
-        placesClient.findAutocompletePredictions(createRequest(query))
-                .addOnSuccessListener(response -> {
-                    List<String> placeIdList = new ArrayList<>();
-                    for (AutocompletePrediction prediction : response.getAutocompletePredictions()) {
-                        //Log.e("BASE", prediction.getFullText(null) + " : " + prediction.getPlaceId());
-                        List<Place.Type> placesType = prediction.getPlaceTypes();
-                        if(!placesType.contains(Place.Type.RESTAURANT)) continue;
-
-                        Log.e(TAG, prediction.getFullText(null) + " : " + prediction.getPlaceId());
-//                        if(placeIdList.size() <= 0)
-                        placeIdList.add(prediction.getPlaceId());
-                    }
-
-                    getDetailsOfPlaceId(context, placeIdList);
-                });
     }
 
     private void getDetailsOfPlaceId(Context context, List<String> placeIds) {
@@ -266,73 +257,32 @@ public class BaseViewModel extends ViewModel {
                 });
     }
 
-//    private void getDetailsOfPlaceIdWithoutPhoto(PlacesClient placesClient, List<String> placeIds) {
-//        mDisposable = Flowable.fromIterable(placeIds)
-//                .parallel()
-//                .runOn(Schedulers.io())
-//                .flatMap(s -> {
-//                    FetchPlaceResponse placeResponse = Tasks.await(placesClient.fetchPlace(getFetchPlaceRequest(s)));
-//
-//                    if(placeResponse == null) return Flowable.empty();
-//                    Place place = placeResponse.getPlace();
-//
-//                    Restaurant restaurant = new Restaurant();
-//                    restaurant.setPlaceId(place.getId());
-//                    restaurant.setName(place.getName());
-//                    restaurant.setAddress(place.getAddress());
-//
-//                    List<PhotoMetadata> photoMetadataList = place.getPhotoMetadatas();
-//                    if(photoMetadataList != null && photoMetadataList.size() > 0) {
-//                        PhotoMetadata photoMetadata = photoMetadataList.get(0);
-//                        Log.e(TAG, photoMetadata.getAttributions());
-//                        //FetchPhotoRequest.builder(photoMetadata).build(
-//
-//                    }
-//
-//                    LatLng latLng = place.getLatLng();
-//                    if(latLng != null) {
-//                        restaurant.setLatitude(latLng.latitude);
-//                        restaurant.setLongitude(latLng.longitude);
-//
-//                        int distance = calculateDistance(lastLatLng, latLng);
-//                        restaurant.setDistance(distance);
-//                    }
-//
-//                    return Flowable.just(restaurant);
-//                })
-//                .sequential()
-//                .toSortedList((o1, o2) -> o1.getDistance() - o2.getDistance())
-//                .subscribeOn(Schedulers.io())
-//                .observeOn(AndroidSchedulers.mainThread())
-//                .doOnError(throwable -> Log.e(TAG, "Auto complete details error ", throwable))
-//                .subscribe(restaurants -> mRestaurantsLiveData.setValue(restaurants));
-//    }
-//    private FetchPlaceRequest getFetchPlaceRequest(String placeId) {
-//        List<Place.Field> placeFields = Arrays.asList(
-//                Place.Field.ID,
-//                Place.Field.NAME,
-//                Place.Field.LAT_LNG,
-//                Place.Field.ADDRESS,
-//                Place.Field.PHOTO_METADATAS);
-//        return  FetchPlaceRequest.newInstance(placeId, placeFields);
-//    }
-
-    //---- END
-
-    public LiveData<LatLng> getLastKnowLocation() {
-        return mLastKnowLocation;
-    }
-
     public void setLastKnowLocation(LatLng lastKnowLocation) {
         mLastKnowLocation.setValue(lastKnowLocation);
+    }
+
+    public void setLocationPermissionState(boolean state){
+        mLocationPermission.setValue(state);
+    }
+
+    public void setRestaurants(List<Restaurant> restaurantList) {
+        mRestaurantsLiveData.setValue(restaurantList);
+    }
+
+    public void setSearchMode(SearchMode searchMode) {
+        this.searchMode = searchMode;
+    }
+
+    public void setMapLatLngBounds(LatLngBounds mapLatLngBounds) {
+        this.mMapLatLngBounds = mapLatLngBounds;
     }
 
     public LiveData<Boolean> getLocationPermissionState() {
         return mLocationPermission;
     }
 
-    public void setLocationPermissionState(boolean state){
-        mLocationPermission.setValue(state);
+    public LiveData<LatLng> getLastKnowLocation() {
+        return mLastKnowLocation;
     }
 
     public LiveData<List<Restaurant>> getRestaurantsLiveData() {
@@ -347,15 +297,4 @@ public class BaseViewModel extends ViewModel {
         }
     }
 
-    public void closeSearchMode() {
-        mRestaurantsLiveData.setValue(mRestaurantList);
-    }
-
-    public void setSearchMode(SearchMode searchMode) {
-        this.searchMode = searchMode;
-    }
-
-    public void setMapLatLngBounds(LatLngBounds mapLatLngBounds) {
-        this.mMapLatLngBounds = mapLatLngBounds;
-    }
 }
