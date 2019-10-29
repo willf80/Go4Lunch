@@ -23,7 +23,6 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import java.util.List;
 
 public class MapsFragment extends BaseFragment implements OnMapReadyCallback {
-//    private static final String TAG = "MapsFragment";
     private static final float DEFAULT_ZOOM = 15.0f;
 
     private GoogleMap mMap;

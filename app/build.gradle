@@ -1,5 +1,10 @@
 apply plugin: 'com.android.application'
 
+def keystorePropertiesFile = rootProject.file("keystore.properties")
+def keystoreProperties = new Properties()
+
+keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+
 android {
     compileSdkVersion 28
     defaultConfig {
@@ -16,6 +21,30 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+
+            // Google Place
+            resValue("string", "place_api_key", keystoreProperties['googlePlaceApiKey'])
+
+            // Facebook
+            resValue("string", "facebook_application_id", keystoreProperties['facebookAppId'])
+            resValue("string", "facebook_login_protocol_scheme", keystoreProperties['facebookScheme'])
+
+            // Twitter
+            resValue("string", "twitter_consumer_key", keystoreProperties['twitterKey'])
+            resValue("string", "twitter_consumer_secret", keystoreProperties['twitterSecret'])
+        }
+
+        debug {
+            // Google Place
+            resValue("string", "place_api_key", keystoreProperties['googlePlaceApiKey'])
+
+            // Facebook
+            resValue("string", "facebook_application_id", keystoreProperties['facebookAppId'])
+            resValue("string", "facebook_login_protocol_scheme", keystoreProperties['facebookScheme'])
+
+            // Twitter
+            resValue("string", "twitter_consumer_key", keystoreProperties['twitterKey'])
+            resValue("string", "twitter_consumer_secret", keystoreProperties['twitterSecret'])
         }
     }
     compileOptions {

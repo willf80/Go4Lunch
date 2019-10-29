@@ -84,12 +84,8 @@ public class BaseViewModel extends ViewModel {
                 .addOnSuccessListener(response -> {
                     List<String> placeIdList = new ArrayList<>();
                     for (AutocompletePrediction prediction : response.getAutocompletePredictions()) {
-                        //Log.e("BASE", prediction.getFullText(null) + " : " + prediction.getPlaceId());
                         List<Place.Type> placesType = prediction.getPlaceTypes();
                         if(!placesType.contains(Place.Type.RESTAURANT)) continue;
-
-//                        Log.e(TAG, prediction.getFullText(null) + " : " + prediction.getPlaceId());
-//                        if(placeIdList.size() <= 0)
                         placeIdList.add(prediction.getPlaceId());
                     }
 
